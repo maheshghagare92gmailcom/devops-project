@@ -3,7 +3,7 @@ name: Deploy
 on:
   push:
     branches:
-      - master
+      - main
       - prod
 
 jobs:
@@ -28,23 +28,14 @@ jobs:
           else
           echo "staging" > .workspace
           fi
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ vars.AWS_USER_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Login to ECR
+      - name: Push to ECR
+        env:
+          AWS_ACCESS_KEY_ID: ${{ vars.AWS_USER_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          aws ecr get-login-password --region us-east-1 \
-          | docker login --username AWS --password-stdin ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
-
-      - name: Build and Push Images
-        run: |
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ vars.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
           docker build --compress -t ${{ vars.ECR_REPO_APP }}:$GITHUB_SHA .
           docker push ${{ vars.ECR_REPO_APP }}:$GITHUB_SHA
-
           docker build --compress -t ${{ vars.ECR_REPO_PROXY }}:$GITHUB_SHA proxy/
           docker push ${{ vars.ECR_REPO_PROXY }}:$GITHUB_SHA
 
@@ -59,7 +50,6 @@ jobs:
       #     export TF_VAR_ecr_proxy_image="${{ vars.ECR_REPO_PROXY }}:$GITHUB_SHA"
       #     workspace=$(cat .workspace)
       #     cd infra/
-
       #     docker compose run --rm terraform -chdir=deploy/ init
       #     docker compose run --rm terraform -chdir=deploy/ workspace select -or-create $workspace
       #     docker compose run --rm terraform -chdir=deploy/ apply -auto-approve
