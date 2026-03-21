@@ -1,49 +1,46 @@
-##########################
-# EFS for media storage. #
-##########################
+resource "aws_efs_file_system" "data" {
 
-resource "aws_efs_file_system" "media" {
-  encrypted = true
+  creation_token = "${module.eks.cluster_name}-data"
   tags = {
-    Name = "${local.prefix}-media"
+    Name = "${module.eks.cluster_name}-data"
   }
 }
 
-resource "aws_security_group" "efs" {
-  name   = "${local.prefix}-efs"
-  vpc_id = aws_vpc.main.id
+resource "aws_efs_mount_target" "data" {
+  count           = length(module.vpc.private_subnets)
+  file_system_id  = aws_efs_file_system.data.id
+  subnet_id       = module.vpc.private_subnets[count.index]
+  security_groups = [aws_security_group.allow-efs.id]
+}
+
+resource "aws_security_group" "allow-efs" {
+  name        = "${local.cluster_name}-allow-efs-sg"
+  description = "Allow EFS access for EKS cluster."
+  vpc_id      = module.vpc.vpc_id
 
   ingress {
-    from_port = 2049
-    to_port   = 2049
-    protocol  = "tcp"
+    from_port   = 2049
+    to_port     = 2049
+    protocol    = "tcp"
+    cidr_blocks = module.vpc.private_subnets_cidr_blocks
+  }
 
-    security_groups = [
-      aws_security_group.ecs_service.id
-    ]
+  tags = {
+    Name = "Allow EFS access for ${local.cluster_name}"
   }
 }
 
-resource "aws_efs_mount_target" "media_a" {
-  file_system_id  = aws_efs_file_system.media.id
-  subnet_id       = aws_subnet.private_a.id
-  security_groups = [aws_security_group.efs.id]
-}
+module "efs_csi_irsa_role" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version = "~> 5.19.0"
 
-resource "aws_efs_mount_target" "media_b" {
-  file_system_id  = aws_efs_file_system.media.id
-  subnet_id       = aws_subnet.private_b.id
-  security_groups = [aws_security_group.efs.id]
-}
+  role_name_prefix      = "${var.prefix}-efs-csi"
+  attach_efs_csi_policy = true
 
-resource "aws_efs_access_point" "media" {
-  file_system_id = aws_efs_file_system.media.id
-  root_directory {
-    path = "/api/media"
-    creation_info {
-      owner_gid   = 101
-      owner_uid   = 101
-      permissions = "755"
+  oidc_providers = {
+    one = {
+      provider_arn               = module.eks.oidc_provider_arn
+      namespace_service_accounts = ["kube-system:efs-csi-controller-sa"]
     }
   }
 }
