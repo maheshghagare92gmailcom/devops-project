@@ -28,10 +28,7 @@ jobs:
           else
           echo "staging" > .workspace
           fi
-      - name: Debug vars
-        run: |
-          echo "APP REPO: ${{ vars.ECR_REPO_APP }}"
-          echo "PROXY REPO: ${{ vars.ECR_REPO_PROXY }}" 
+     
 
       - name: Push to ECR
         env:
