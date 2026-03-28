@@ -1,4 +1,4 @@
-name: Build and Push UI Service to ECR
+7890name: Build and Push UI Service to ECR
 
 on:
   push:
@@ -117,7 +117,7 @@ jobs:
       
       - name: Update Helm values file with new image tag
         run: |
-          cd app/helm
+          cd django-app/
           pwd
           ls
           # Install yq (YAML-safe processor)
