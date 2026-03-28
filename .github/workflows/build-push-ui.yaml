@@ -13,8 +13,8 @@ permissions:
 
 env:
   AWS_REGION: us-east-1
-  ECR_REPOSITORY_APP: app
-  ECR_REPOSITORY_PROXY: proxy
+  ECR_REPOSITORY_APP: recipe-app-api-app-final
+  ECR_REPOSITORY_PROXY: recipe-app-api-proxy-final
 
 jobs:
   build-and-push-ui:
