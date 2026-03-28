@@ -1,4 +1,4 @@
-7890name: Build and Push UI Service to ECR
+name: Build and Push UI Service to ECR
 
 on:
   push:
