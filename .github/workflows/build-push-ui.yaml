@@ -134,10 +134,10 @@ jobs:
           echo "Updating image tags to: $NEW_TAG"
 
           # Update APP image tag
-          yq -i '.deployments.app.image.tag = "'$NEW_TAG'"' django-chart/values.yaml
+          yq -i '.deployments.app.image.tag = "'$NEW_TAG'"' values.yaml
 
           # Update PROXY image tag
-          yq -i '.deployments.proxy.image.tag = "'$NEW_TAG'"' django-chart/values.yaml
+          yq -i '.deployments.proxy.image.tag = "'$NEW_TAG'"' values.yaml
 
           # Show changes (debug)
           echo "Updated tags:"
