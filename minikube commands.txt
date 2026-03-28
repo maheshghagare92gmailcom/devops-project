@@ -1,7 +1,0 @@
-minikube starts
-minikube dashboard
-docker buildx build -t django-app:latest . 
-docker buildx build -t django-proxy:latest proxy/
-minikube image load django-app:latest
-minikube image load django-proxy:latest
- kubectl exec -it django-5bbb5cbdc5-mtqks -c app -- python manage.py createsuperuser

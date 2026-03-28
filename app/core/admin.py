@@ -48,3 +48,13 @@ admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Recipe)
 admin.site.register(models.Tag)
 admin.site.register(models.Ingredient)
+
+
+
+# ================================
+# Deployment Test Customization 🚀
+# ================================
+
+admin.site.site_header = "🚀 Mahesh Deployment v2"
+admin.site.site_title = "Mahesh Admin Portal"
+admin.site.index_title = "Welcome to NEW Deployment"

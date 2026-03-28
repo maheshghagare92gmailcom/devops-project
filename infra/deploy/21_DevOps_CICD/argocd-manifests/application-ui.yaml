@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: django-app                # e.g. django-app / ui / backend
+  namespace: argocd
+
+spec:
+  project: default
+
+  source:
+    repoURL: https://github.com/maheshghagare92gmailcom/aws-devops-github-actinos-ecr-argocd3.git    # e.g. https://github.com/<username>/<repo>.git
+    targetRevision: main      # e.g. main / dev
+    path: app/helm/django-chart       # e.g. app/helm/django-chart
+
+    helm:
+      valueFiles:
+        - values.yaml      # e.g. values.yaml
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default    # e.g. default / dev / prod
+
+  syncPolicy:
+    automated:
+      prune: true                # remove deleted resources
+      selfHeal: true             # auto-fix drift
+
+    syncOptions:
+      - CreateNamespace=true
