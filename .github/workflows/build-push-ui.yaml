@@ -141,7 +141,7 @@ jobs:
 
           # Show changes (debug)
           echo "Updated tags:"
-          cat django-chart/values.yaml | grep tag
+          cat values.yaml | grep tag
 
           # Commit only if changes exist
           git diff --quiet || (
