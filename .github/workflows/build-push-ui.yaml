@@ -145,7 +145,7 @@ jobs:
 
           # Commit only if changes exist
           git diff --quiet || (
-          git add django-chart/values.yaml
+          git add values.yaml
           git commit -m "Update UI image tag to $NEW_TAG"
           git push origin main
           )
