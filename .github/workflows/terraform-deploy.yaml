@@ -40,7 +40,9 @@ jobs:
           else
           echo "staging" > .workspace
           fi
-
+      - name: Debug docker compose
+        run: |
+          pwd
       - name: Terraform Apply
         run: |  
           workspace=$(cat .workspace)
