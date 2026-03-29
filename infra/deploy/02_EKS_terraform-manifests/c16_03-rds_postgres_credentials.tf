@@ -29,7 +29,7 @@ output "debug_retailstore_secret_username" {
   value       = local.retailstore_secret_json.DB_NAME
   sensitive   = true
 }
-    
+
 
 output "debug_retailstore_secret_dbuser" {
   description = "⚠️ For testing only: DB password from Secrets Manager"

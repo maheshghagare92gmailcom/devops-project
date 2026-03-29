@@ -1,26 +1,26 @@
 
 
 resource "aws_db_instance" "catalog_rds" {
-  identifier              = "mydb3"
-  engine                  = "postgres"
-  engine_version          = "15"   # or any supported version
-  instance_class          = "db.t3.micro"
-  allocated_storage       = 20
+  identifier        = "mydb3"
+  engine            = "postgres"
+  engine_version    = "15" # or any supported version
+  instance_class    = "db.t3.micro"
+  allocated_storage = 20
 
-  db_name                 = try(local.retailstore_secret_json.DB_NAME, null)
-  username                = try(local.retailstore_secret_json.DB_USER, null)
-  password                = try(local.retailstore_secret_json.DB_PASS, null)
+  db_name  = try(local.retailstore_secret_json.DB_NAME, null)
+  username = try(local.retailstore_secret_json.DB_USER, null)
+  password = try(local.retailstore_secret_json.DB_PASS, null)
 
-  port                    = 5432
+  port = 5432
 
-  db_subnet_group_name    = aws_db_subnet_group.rds_private.name
-  vpc_security_group_ids  = [aws_security_group.rds_mysql_sg.id]
+  db_subnet_group_name   = aws_db_subnet_group.rds_private.name
+  vpc_security_group_ids = [aws_security_group.rds_mysql_sg.id]
 
-  skip_final_snapshot     = true
-  publicly_accessible     = false
+  skip_final_snapshot      = true
+  publicly_accessible      = false
   delete_automated_backups = true
-  multi_az                = false
-  backup_retention_period = 1
+  multi_az                 = false
+  backup_retention_period  = 1
 
   tags = {
     Name = "${local.name}-catalog-rds-postgres"
