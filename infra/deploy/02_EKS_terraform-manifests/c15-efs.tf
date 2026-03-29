@@ -49,20 +49,20 @@ resource "helm_release" "efs_csi" {
   namespace  = "kube-system"
 
   set = [
-  {
-    name  = "controller.serviceAccount.create"
-    value = "true"
-  },
-  {
-    name  = "controller.serviceAccount.name"
-    value = "efs-csi-controller-sa"
-  },
+    {
+      name  = "controller.serviceAccount.create"
+      value = "true"
+    },
+    {
+      name  = "controller.serviceAccount.name"
+      value = "efs-csi-controller-sa"
+    },
 
- {
-  name  = "controller.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
-  value = module.efs_csi_irsa_role.iam_role_arn
-}
-]
+    {
+      name  = "controller.serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+      value = module.efs_csi_irsa_role.iam_role_arn
+    }
+  ]
 }
 
 
@@ -116,7 +116,7 @@ module "efs_csi_irsa_role" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   version = "~> 5.19.0"
 
-  role_name = "efs-csi-irsa-role"
+  role_name             = "efs-csi-irsa-role"
   attach_vpc_cni_policy = true
   vpc_cni_enable_ipv4   = true
   attach_efs_csi_policy = true
@@ -128,6 +128,6 @@ module "efs_csi_irsa_role" {
     }
   }
 
-  
+
 }
 

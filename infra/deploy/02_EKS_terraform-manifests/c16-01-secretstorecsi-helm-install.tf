@@ -15,7 +15,7 @@ resource "helm_release" "secrets_store_csi_driver" {
       name  = "syncSecret.enabled"
       value = "true"
     },
-  ]    
+  ]
 
   # Wait until all pods are ready
   wait            = true

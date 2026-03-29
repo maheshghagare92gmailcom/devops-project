@@ -2,7 +2,7 @@ terraform {
   required_version = ">= 1.3.0"
 
   required_providers {
-     aws = {
+    aws = {
       source  = "hashicorp/aws"
       version = ">= 5.30"
     }
@@ -19,16 +19,16 @@ terraform {
   }
 
 
-# Remote Backend
+  # Remote Backend
   backend "s3" {
-    bucket         = "tfstate-dev-us-east-1-lqvonw"
-    key            = "eks/dev/terraform.tfstate"
-    region         = "us-east-1"
-    encrypt        = true
+    bucket       = "tfstate-dev-us-east-1-lqvonw"
+    key          = "eks/dev/terraform.tfstate"
+    region       = "us-east-1"
+    encrypt      = true
     use_lockfile = true
-  }  
+  }
 
-} 
+}
 
 
 
