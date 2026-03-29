@@ -66,7 +66,7 @@ storageClass:
 deployments:
   app:
     image:
-      tag: sha-c622f79
+      tag: sha-dcde76e
   proxy:
     image:
-      tag: sha-c622f79
+      tag: sha-dcde76e
