@@ -25,11 +25,22 @@ jobs:
     name: Deploy
     runs-on: ubuntu-22.04
     needs: [test-lint]
-    strategy:
-      matrix:
-        dir:
-          - deploy/01_VPC_terraform-manifests
-          - deploy/02_EKS_terraform-manifests
+    # strategy:
+    #   matrix:
+    #     dir:
+    #       - deploy/01_VPC_terraform-manifests
+    #       - deploy/02_EKS_terraform-manifests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set vars
+        run: |
+          if [[ $GITHUB_REF == 'refs/heads/prod' ]]; then
+            echo "prod" > .workspace
+          else
+          echo "staging" > .workspace
+          fi
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
