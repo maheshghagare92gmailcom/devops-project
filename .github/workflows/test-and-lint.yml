@@ -35,8 +35,8 @@ jobs:
     strategy:
       matrix:
         dir:
-          - 01_VPC_terraform-manifest
-          - 02_EKS_terraform-manifest
+          - 01_VPC_terraform-manifests
+          - 02_EKS_terraform-manifests
 
     steps:
       - name: Checkout
