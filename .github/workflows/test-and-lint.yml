@@ -49,8 +49,8 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Debug Terraform Paths
         working-directory: infra
-        run: docker compose run --rm terraform ls -R /tf
-        
+        run: docker compose run --rm --entrypoint sh terraform -c "pwd && ls -R"
+
       - name: Terraform Init
         working-directory: infra
         run: |
