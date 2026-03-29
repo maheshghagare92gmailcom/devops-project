@@ -35,8 +35,8 @@ jobs:
     strategy:
       matrix:
         dir:
-          - deploy/01_VPC_terraform-manifest
-          - deploy/02_EKS_terraform-manifest
+          - 01_VPC_terraform-manifest
+          - 02_EKS_terraform-manifest
 
     steps:
       - name: Checkout
@@ -47,7 +47,10 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
+      - name: Debug Terraform Paths
+        working-directory: infra
+        run: docker compose run --rm terraform ls -R /tf
+        
       - name: Terraform Init
         working-directory: infra
         run: |
