@@ -36,7 +36,6 @@ jobs:
     strategy:
       matrix:
         dir:
-        
         - deploy/01_VPC_terraform-manifests
         - deploy/02_EKS_terraform-manifests
     steps:
