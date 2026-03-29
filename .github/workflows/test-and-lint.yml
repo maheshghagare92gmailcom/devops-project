@@ -35,8 +35,8 @@ jobs:
     strategy:
       matrix:
         dir:
-          - infra/deploy/01_VPC_terraform-manifest
-          - infra/deploy/02_EKS_terraform-manifest
+          - deploy/01_VPC_terraform-manifest
+          - deploy/02_EKS_terraform-manifest
 
     steps:
       - name: Checkout
@@ -50,12 +50,15 @@ jobs:
 
       - name: Terraform Init
         run: |
+          working-directory: infra
           docker compose run --rm terraform -chdir=${{ matrix.dir }} init -backend=false
 
       - name: Terraform Format Check
         run: |
+          working-directory: infra
           docker compose run --rm terraform -chdir=${{ matrix.dir }} fmt -check
 
       - name: Terraform Validate
         run: |
+          working-directory: infra
           docker compose run --rm terraform -chdir=${{ matrix.dir }} validate
