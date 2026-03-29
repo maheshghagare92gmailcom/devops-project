@@ -41,7 +41,6 @@ jobs:
           echo "staging" > .workspace
           fi
 
-    steps:
       - name: Terraform Apply
         run: |  
           workspace=$(cat .workspace)
