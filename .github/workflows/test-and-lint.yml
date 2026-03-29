@@ -49,16 +49,19 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Terraform Init
+        working-directory: infra
         run: |
-          working-directory: infra
+          
           docker compose run --rm terraform -chdir=${{ matrix.dir }} init -backend=false
 
       - name: Terraform Format Check
+        working-directory: infra
         run: |
-          working-directory: infra
+          
           docker compose run --rm terraform -chdir=${{ matrix.dir }} fmt -check
 
       - name: Terraform Validate
+        working-directory: infra
         run: |
-          working-directory: infra
+          
           docker compose run --rm terraform -chdir=${{ matrix.dir }} validate
