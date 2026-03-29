@@ -44,6 +44,7 @@ jobs:
         run: |
           pwd
       - name: Terraform Apply
+        working-directory: infra
         run: |  
           workspace=$(cat .workspace)
           docker compose run --rm terraform -chdir=${{ matrix.dir }} init
