@@ -1,0 +1,54 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - prod
+
+# on:
+#   workflow_dispatch:   # manual trigger
+#   push:
+#     paths:
+#       - "infra/**"     # only when infra changes
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+
+
+jobs:
+  test-lint:
+    uses: ./.github/workflows/test-and-lint.yml
+    name: Test and Lint
+    secrets:
+      DOCKERHUB_USER: ${{ vars.DOCKERHUB_USER }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-22.04
+    needs: [test-lint]
+    strategy:
+      matrix:
+        dir:
+        
+        - deploy/01_VPC_terraform-manifests
+        - deploy/02_EKS_terraform-manifests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Terraform Apply
+        
+        run: |
+            
+          workspace=$(cat .workspace)
+          cd infra/
+          docker compose run --rm terraform -chdir=${{ matrix.dir }} init
+          docker compose run --rm terraform -chdir=${{ matrix.dir }} workspace select -or-create $workspace
+          docker compose run --rm terraform -chdir=${{ matrix.dir }} apply -auto-approve
