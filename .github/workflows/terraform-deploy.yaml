@@ -28,16 +28,15 @@ jobs:
     strategy:
       matrix:
         dir:
-        - deploy/01_VPC_terraform-manifests
-        - deploy/02_EKS_terraform-manifests
+          - deploy/01_VPC_terraform-manifests
+          - deploy/02_EKS_terraform-manifests
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Terraform Apply
         
-        run: |
-            
+        run: |  
           workspace=$(cat .workspace)
           cd infra/
           docker compose run --rm terraform -chdir=${{ matrix.dir }} init
