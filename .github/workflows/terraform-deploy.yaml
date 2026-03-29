@@ -2,15 +2,7 @@ name: Deploy
 
 on:
   push:
-    branches:
-      - main
-      - prod
-
-# on:
-#   workflow_dispatch:   # manual trigger
-#   push:
-#     paths:
-#       - "infra/**"     # only when infra changes
+    branches: [ "main", "prod" ]
 
 permissions:
   id-token: write
