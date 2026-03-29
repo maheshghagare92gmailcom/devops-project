@@ -10,9 +10,10 @@ terraform {
   backend "s3" {
     bucket       = "tfstate-dev-us-east-1-lqvonw"
     key          = "vpc/dev/terraform.tfstate"
+    workspace_key_prefix = "tf-state-deploy-env"
     region       = "us-east-1"
     encrypt      = true
-    use_lockfile = true
+    # use_lockfile = true
   }
 }
 

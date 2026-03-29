@@ -47,6 +47,12 @@ jobs:
         working-directory: infra
         run: |  
           workspace=$(cat ../.workspace)
-          docker compose run --rm terraform -chdir=${{ matrix.dir }} init
-          docker compose run --rm terraform -chdir=${{ matrix.dir }} workspace select -or-create $workspace
-          docker compose run --rm terraform -chdir=${{ matrix.dir }} apply -auto-approve
+          echo "===== Applying VPC ====="
+          docker compose run --rm terraform -chdir=deploy/01_VPC_terraform-manifests init
+          docker compose run --rm terraform -chdir=deploy/01_VPC_terraform-manifests workspace select -or-create $workspace
+          docker compose run --rm terraform -chdir=deploy/01_VPC_terraform-manifests apply -auto-approve
+          echo "===== Applying EKS ====="
+          docker compose run --rm terraform -chdir=deploy/02_EKS_terraform-manifests init
+          docker compose run --rm terraform -chdir=deploy/02_EKS_terraform-manifests workspace select -or-create $workspace
+          docker compose run --rm terraform -chdir=deploy/02_EKS_terraform-manifests apply -auto-approve
+
