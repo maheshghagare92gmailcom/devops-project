@@ -43,7 +43,6 @@ jobs:
 
     steps:
       - name: Terraform Apply
-        
         run: |  
           workspace=$(cat .workspace)
           docker compose run --rm terraform -chdir=${{ matrix.dir }} init
