@@ -48,23 +48,54 @@ jobs:
       - name: Debug docker compose
         run: |
           pwd
+      # - name: Terraform Apply
+      #   working-directory: infra
+      #   run: |
+      #     workspace=$(cat ../.workspace)
+
+      #     echo "===== Applying VPC ====="
+      #     docker compose run --rm terraform sh -c "
+      #       terraform -chdir=deploy/01_VPC_terraform-manifests init &&
+      #       te78rraform -chdir=deploy/01_VPC_terraform-manifests workspace select -or-create $workspace &&
+      #       terraform -chdir=deploy/01_VPC_terraform-manifests apply -auto-approve &&
+      #       terraform -chdir=deploy/01_VPC_terraform-manifests output
+      #     "
+
+      #     echo "===== Applying EKS ====="
+      #     docker compose run --rm terraform sh -c "
+      #       terraform -chdir=deploy/02_EKS_terraform-manifests init &&
+      #       terraform -chdir=deploy/02_EKS_terraform-manifests workspace select -or-create $workspace &&
+      #       terraform -chdir=deploy/02_EKS_terraform-manifests apply -auto-approve
+      #     "
+
       - name: Terraform Apply
         working-directory: infra
         run: |
           workspace=$(cat ../.workspace)
 
           echo "===== Applying VPC ====="
-          docker compose run --rm terraform sh -c "
-            terraform -chdir=deploy/01_VPC_terraform-manifests init &&
-            te78rraform -chdir=deploy/01_VPC_terraform-manifests workspace select -or-create $workspace &&
-            terraform -chdir=deploy/01_VPC_terraform-manifests apply -auto-approve &&
-            terraform -chdir=deploy/01_VPC_terraform-manifests output
-          "
+          docker compose run --rm \
+            --entrypoint "" \
+            -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+            -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+            -e AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
+            -e AWS_REGION=$AWS_REGION \
+            terraform sh -c "
+              terraform -chdir=deploy/01_VPC_terraform-manifests init &&
+              terraform -chdir=deploy/01_VPC_terraform-manifests workspace select -or-create $workspace &&
+              terraform -chdir=deploy/01_VPC_terraform-manifests apply -auto-approve &&
+              terraform -chdir=deploy/01_VPC_terraform-manifests output
+            "
 
           echo "===== Applying EKS ====="
-          docker compose run --rm terraform sh -c "
-            terraform -chdir=deploy/02_EKS_terraform-manifests init &&
-            terraform -chdir=deploy/02_EKS_terraform-manifests workspace select -or-create $workspace &&
-            terraform -chdir=deploy/02_EKS_terraform-manifests apply -auto-approve
-          "
-
+          docker compose run --rm \
+            --entrypoint "" \
+            -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+            -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+            -e AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
+            -e AWS_REGION=$AWS_REGION \
+            terraform sh -c "
+              terraform -chdir=deploy/02_EKS_terraform-manifests init &&
+              terraform -chdir=deploy/02_EKS_terraform-manifests workspace select -or-create $workspace &&
+              terraform -chdir=deploy/02_EKS_terraform-manifests apply -auto-approve
+            "
