@@ -50,15 +50,21 @@ jobs:
           pwd
       - name: Terraform Apply
         working-directory: infra
-        run: |  
+        run: |
           workspace=$(cat ../.workspace)
+
           echo "===== Applying VPC ====="
-          docker compose run --rm terraform -chdir=deploy/01_VPC_terraform-manifests init
-          docker compose run --rm terraform -chdir=deploy/01_VPC_terraform-manifests workspace select -or-create $workspace
-          docker compose run --rm terraform -chdir=deploy/01_VPC_terraform-manifests apply -auto-approve
-          docker compose run --rm terraform -chdir=deploy/01_VPC_terraform-manifests output
+          docker compose run --rm terraform sh -c "
+            terraform -chdir=deploy/01_VPC_terraform-manifests init &&
+            te78rraform -chdir=deploy/01_VPC_terraform-manifests workspace select -or-create $workspace &&
+            terraform -chdir=deploy/01_VPC_terraform-manifests apply -auto-approve &&
+            terraform -chdir=deploy/01_VPC_terraform-manifests output
+          "
+
           echo "===== Applying EKS ====="
-          docker compose run --rm terraform -chdir=deploy/02_EKS_terraform-manifests init
-          docker compose run --rm terraform -chdir=deploy/02_EKS_terraform-manifests workspace select -or-create $workspace
-          docker compose run --rm terraform -chdir=deploy/02_EKS_terraform-manifests apply -auto-approve
+          docker compose run --rm terraform sh -c "
+            terraform -chdir=deploy/02_EKS_terraform-manifests init &&
+            terraform -chdir=deploy/02_EKS_terraform-manifests workspace select -or-create $workspace &&
+            terraform -chdir=deploy/02_EKS_terraform-manifests apply -auto-approve
+          "
 
