@@ -9,8 +9,9 @@ data "terraform_remote_state" "vpc" {
     key                  = "vpc/dev/terraform.tfstate"    # Path to the VPC tfstate file within the bucket
     region               = var.aws_region                 # Region where the S3 bucket and DynamoDB table exist
     workspace_key_prefix = "tf-state-deploy-env"
-    workspace            = "terraform.workspace"
+    
   }
+  workspace            = "terraform.workspace"
 }
 
 # --------------------------------------------------------------------
