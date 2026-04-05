@@ -97,5 +97,6 @@ jobs:
             terraform sh -c "
               terraform -chdir=deploy/02_EKS_terraform-manifests init &&
               terraform -chdir=deploy/02_EKS_terraform-manifests workspace select -or-create $workspace &&
+              terraform -chdir=deploy/02_EKS_terraform-manifests workspace show &&
               terraform -chdir=deploy/02_EKS_terraform-manifests apply -auto-approve
             "

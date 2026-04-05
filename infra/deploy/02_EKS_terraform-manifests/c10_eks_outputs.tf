@@ -99,3 +99,13 @@ output "efs_id" {
 output "oidc_provider_url" {
   value = aws_eks_cluster.main.identity[0].oidc[0].issuer
 }
+
+
+output "debug_remote_state_all" {
+  value = data.terraform_remote_state.vpc
+}
+
+
+output "debug_vpc_outputs" {
+  value = data.terraform_remote_state.vpc.outputs
+}
