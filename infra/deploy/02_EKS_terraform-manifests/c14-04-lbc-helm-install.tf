@@ -43,6 +43,7 @@ resource "helm_release" "loadbalancer_controller" {
   namespace         = "kube-system"
   dependency_update = true
   force_update      = true
+  version    = "1.7.1"
 
   # version  = "1.13.0"         # Recommended in prod, if not specified always uses latest version   
 

@@ -42,12 +42,13 @@ resource "kubernetes_storage_class_v1" "efs" {
 
 
 resource "helm_release" "efs_csi" {
-  name       = "aws-efs-csi-driver"
-  repository = "https://kubernetes-sigs.github.io/aws-efs-csi-driver"
-  chart      = "aws-efs-csi-driver"
-  version    = "3.4.0" # use latest stable version
-  namespace  = "kube-system"
-
+  name              = "aws-efs-csi-driver"
+  repository        = "https://kubernetes-sigs.github.io/aws-efs-csi-driver"
+  chart             = "aws-efs-csi-driver"
+  version           = "3.4.0" # use latest stable version
+  namespace         = "kube-system"
+  dependency_update = true
+  force_update      = true
   set = [
     {
       name  = "controller.serviceAccount.create"
