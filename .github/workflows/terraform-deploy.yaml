@@ -1,3 +1,7 @@
+# 
+
+
+
 name: Deploy
 
 on:
@@ -11,7 +15,6 @@ permissions:
 env:
   AWS_REGION: us-east-1
 
-
 jobs:
   test-lint:
     uses: ./.github/workflows/test-and-lint.yml
@@ -20,58 +23,36 @@ jobs:
       DOCKERHUB_USER: ${{ vars.DOCKERHUB_USER }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
-
   deploy:
     name: Deploy
     runs-on: ubuntu-22.04
     needs: [test-lint]
-    # strategy:
-    #   matrix:
-    #     dir:
-    #       - deploy/01_VPC_terraform-manifests
-    #       - deploy/02_EKS_terraform-manifests
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::837318114635:role/github-actions-oidc-role-ui3
           aws-region: ${{ env.AWS_REGION }}
-      - name: Set vars
+
+      - name: Set workspace
         run: |
-          if [[ $GITHUB_REF == 'refs/heads/prod' ]]; then
+          if [[ "$GITHUB_REF" == "refs/heads/prod" ]]; then
             echo "prod" > .workspace
           else
-          echo "staging" > .workspace
+            echo "staging" > .workspace
           fi
-      - name: Debug docker compose
-        run: |
-          pwd
-      # - name: Terraform Apply
-      #   working-directory: infra
-      #   run: |
-      #     workspace=$(cat ../.workspace)
-
-      #     echo "===== Applying VPC ====="
-      #     docker compose run --rm terraform sh -c "
-      #       terraform -chdir=deploy/01_VPC_terraform-manifests init &&
-      #       te78rraform -chdir=deploy/01_VPC_terraform-manifests workspace select -or-create $workspace &&
-      #       terraform -chdir=deploy/01_VPC_terraform-manifests apply -auto-approve &&
-      #       terraform -chdir=deploy/01_VPC_terraform-manifests output
-      #     "
-
-      #     echo "===== Applying EKS ====="
-      #     docker compose run --rm terraform sh -c "
-      #       terraform -chdir=deploy/02_EKS_terraform-manifests init &&
-      #       terraform -chdir=deploy/02_EKS_terraform-manifests workspace select -or-create $workspace &&
-      #       terraform -chdir=deploy/02_EKS_terraform-manifests apply -auto-approve
-      #     "
 
       - name: Terraform Apply
         working-directory: infra
         run: |
+          set -e
+
           workspace=$(cat ../.workspace)
+          echo "Using workspace: $workspace"
 
           echo "===== Applying VPC ====="
           docker compose run --rm \
@@ -80,12 +61,13 @@ jobs:
             -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
             -e AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
             -e AWS_REGION=$AWS_REGION \
+            -e TF_VAR_env=$workspace \
             terraform sh -c "
               terraform -chdir=deploy/01_VPC_terraform-manifests init &&
               terraform -chdir=deploy/01_VPC_terraform-manifests workspace select -or-create $workspace &&
-              terraform -chdir=deploy/01_VPC_terraform-manifests workspace list
-              terraform -chdir=deploy/01_VPC_terraform-manifests workspace show
-              terraform -chdir=deploy/01_VPC_terraform-manifests state list
+              terraform -chdir=deploy/01_VPC_terraform-manifests workspace list &&
+              terraform -chdir=deploy/01_VPC_terraform-manifests workspace show &&
+              terraform -chdir=deploy/01_VPC_terraform-manifests state list &&
               terraform -chdir=deploy/01_VPC_terraform-manifests apply -auto-approve &&
               terraform -chdir=deploy/01_VPC_terraform-manifests output
             "
@@ -97,7 +79,9 @@ jobs:
             -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
             -e AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
             -e AWS_REGION=$AWS_REGION \
+            -e TF_VAR_env=$workspace \
             terraform sh -c "
+              helm repo update &&
               terraform -chdir=deploy/02_EKS_terraform-manifests init &&
               terraform -chdir=deploy/02_EKS_terraform-manifests workspace select -or-create $workspace &&
               terraform -chdir=deploy/02_EKS_terraform-manifests workspace show &&

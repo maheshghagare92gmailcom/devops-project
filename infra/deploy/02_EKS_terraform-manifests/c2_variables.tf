@@ -108,3 +108,7 @@ variable "node_disk_size" {
   type        = number
   default     = 20
 }
+
+variable "env" {
+  type = string
+}

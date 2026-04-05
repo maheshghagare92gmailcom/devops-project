@@ -29,3 +29,4 @@ output "helm_secrets_store_csi_driver_metadata" {
   description = "Metadata for the Secrets Store CSI Driver Helm release"
   value       = helm_release.secrets_store_csi_driver.metadata
 }
+

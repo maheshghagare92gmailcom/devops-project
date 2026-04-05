@@ -41,6 +41,9 @@ resource "helm_release" "loadbalancer_controller" {
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
   namespace  = "kube-system"
+  dependency_update = true
+  force_update      = true 
+
   # version  = "1.13.0"         # Recommended in prod, if not specified always uses latest version   
 
   wait            = true # Wait for resources to become Ready
