@@ -11,7 +11,7 @@ data "terraform_remote_state" "vpc" {
     workspace_key_prefix = "tf-state-deploy-env"
 
   }
-  workspace = "terraform.workspace"
+  
 }
 
 # --------------------------------------------------------------------
