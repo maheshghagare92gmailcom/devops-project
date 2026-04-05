@@ -83,6 +83,9 @@ jobs:
             terraform sh -c "
               terraform -chdir=deploy/01_VPC_terraform-manifests init &&
               terraform -chdir=deploy/01_VPC_terraform-manifests workspace select -or-create $workspace &&
+              terraform -chdir=deploy/01_VPC_terraform-manifests workspace list
+              terraform -chdir=deploy/01_VPC_terraform-manifests workspace show
+              terraform -chdir=deploy/01_VPC_terraform-manifests state list
               terraform -chdir=deploy/01_VPC_terraform-manifests apply -auto-approve &&
               terraform -chdir=deploy/01_VPC_terraform-manifests output
             "
