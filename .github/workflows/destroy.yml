@@ -9,6 +9,10 @@ on:
         options:
           - staging
           - prod
+permissions:
+  id-token: write
+  contents: read
+
 env:
   AWS_REGION: us-east-1
 
