@@ -81,6 +81,9 @@ jobs:
             -e AWS_REGION=$AWS_REGION \
             -e TF_VAR_env=$workspace \
             terraform sh -c "
+              helm repo add eks https://aws.github.io/eks-charts &&
+              helm repo add efs https://kubernetes-sigs.github.io/aws-efs-csi-driver/ &&
+              helm repo add csi https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts &&
               helm repo update &&
               terraform -chdir=deploy/02_EKS_terraform-manifests init &&
               terraform -chdir=deploy/02_EKS_terraform-manifests workspace select -or-create $workspace &&
