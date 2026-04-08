@@ -36,12 +36,15 @@ jobs:
 
         working-directory: infra
         run: |
-          export TF_WORKSPACE=${{ github.event.inputs.environment }}
+          set -euo pipefail
+
+          workspace=${{ github.event.inputs.environment }}
+          echo "Using workspace: $workspace"
 
           echo "===== Destroying EKS ====="
           terraform -chdir=deploy/02_EKS_terraform-manifests init &&
-          terraform -chdir=deploy/02_EKS_terraform-manifests workspace show &&
           terraform -chdir=deploy/01_VPC_terraform-manifests workspace select -or-create $workspace &&
+          terraform -chdir=deploy/02_EKS_terraform-manifests workspace show &&
           terraform -chdir=deploy/02_EKS_terraform-manifests destroy -auto-approve
 
           
