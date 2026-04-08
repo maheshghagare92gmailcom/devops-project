@@ -1,3 +1,12 @@
+resource "null_resource" "wait_for_lbc" {
+  depends_on = [helm_release.loadbalancer_controller]
+
+  provisioner "local-exec" {
+    command = "kubectl wait --namespace kube-system --for=condition=available deployment/aws-load-balancer-controller --timeout=300s"
+  }
+}
+
+
 ##############################################
 # Discover latest ExternalDNS addon version
 ##############################################
@@ -15,7 +24,8 @@ resource "aws_eks_addon" "externaldns" {
     aws_iam_role.externaldns_role,
     aws_eks_pod_identity_association.externaldns,
     aws_eks_addon.podidentity,
-    aws_eks_node_group.private_nodes
+    aws_eks_node_group.private_nodes,
+    null_resource.wait_for_lbc
   ]
   cluster_name  = aws_eks_cluster.main.name
   addon_name    = "external-dns"
