@@ -1,6 +1,6 @@
 services:
   terraform:
-    image: hashicorp/terraform:1.6.2
+    build: .
     volumes:
       - ./setup:/tf/setup
       - ./deploy:/tf/deploy
@@ -15,3 +15,6 @@ services:
       - TF_VAR_django_secret_key=${TF_VAR_django_secret_key}
       - TF_VAR_ecr_proxy_image=${TF_VAR_ecr_proxy_image}
       - TF_VAR_ecr_app_image=${TF_VAR_ecr_app_image}
+
+
+
