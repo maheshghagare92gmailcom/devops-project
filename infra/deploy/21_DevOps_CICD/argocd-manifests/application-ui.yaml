@@ -9,9 +9,10 @@ spec:
   project: default
 
   source:
-    repoURL: https://github.com/maheshghagare92gmailcom/aws-devops-github-actinos-ecr-argocd3.git    # e.g. https://github.com/<username>/<repo>.git
+    repoURL: https://github.com/maheshghagare92gmailcom/aws-django-eks-tutorial_image_receipe_app_api-final
+    # e.g. https://github.com/<username>/<repo>.git
     targetRevision: main      # e.g. main / dev
-    path: app/helm/django-chart       # e.g. app/helm/django-chart
+    path: django-app  # e.g. app/helm/django-chart
 
     helm:
       valueFiles:
