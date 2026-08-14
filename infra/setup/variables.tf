@@ -1,11 +1,11 @@
 variable "tf_state_bucket" {
   description = "Name of S3 bucket in AWS for storing TF state"
-  default     = "devops-recipe-app-tf-state-12499421"
+  default     = "devops-recipe-app-tf-state-mahesh"
 }
 
 variable "tf_state_lock_table" {
   description = "Name of DynamoDB table for TF state locking"
-  default     = "devops-recipe-app-api-tf-lock"
+  default     = "devops-recipe-app-tf-state-lock-mahesh"
 }
 
 variable "project" {
