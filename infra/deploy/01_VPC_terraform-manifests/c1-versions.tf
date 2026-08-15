@@ -8,12 +8,12 @@ terraform {
   }
   # Remote Backend
   backend "s3" {
-    bucket               = "tfstate-dev-us-east-1-lqvonw"
-    key                  = "vpc/dev/terraform.tfstate"
+    bucket         = "devops-recipe-app-tf-state-mahesh"
+    key            = "tf-state-deploy"
     workspace_key_prefix = "tf-state-deploy-env"
-    region               = "us-east-1"
-    encrypt              = true
-    # use_lockfile = true
+    region         = "us-east-1"
+    encrypt        = true
+    dynamodb_table = "devops-recipe-app-tf-state-lock-mahesh"
   }
 }
 
