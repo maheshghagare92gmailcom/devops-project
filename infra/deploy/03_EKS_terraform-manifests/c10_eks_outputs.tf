@@ -91,10 +91,10 @@ output "eks_cluster_security_group_id" {
 #   value       = aws_ecr_repository.proxy.repository_url
 # }
 
-output "efs_id" {
-  description = "EFS File System ID"
-  value       = aws_efs_file_system.data.id
-}
+# output "efs_id" {
+#   description = "EFS File System ID"
+#   value       = aws_efs_file_system.data.id
+# }
 
 output "oidc_provider_url" {
   value = aws_eks_cluster.main.identity[0].oidc[0].issuer
