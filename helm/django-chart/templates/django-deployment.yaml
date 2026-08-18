@@ -1,0 +1,89 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django
+spec:
+  replicas: {{ .Values.django.replicas }}
+
+  selector:
+    matchLabels:
+      app: django
+
+  template:
+    metadata:
+      labels:
+        app: django
+
+    spec:
+      serviceAccountName: {{ .Values.django.serviceAccountName }}
+
+      containers:
+        - name: django
+
+          image: "{{ .Values.django.image.repository }}:{{ .Values.django.image.tag }}"
+
+          ports:
+            - containerPort: {{ .Values.django.containerPort }}
+
+          env:
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.django.secret.name }}
+                  key: DJANGO_SECRET_KEY
+
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.django.secret.name }}
+                  key: DB_HOST
+
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.django.secret.name }}
+                  key: DB_NAME
+
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.django.secret.name }}
+                  key: DB_USER
+
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.django.secret.name }}
+                  key: DB_PASS
+
+            - name: ALLOWED_HOSTS
+              value: "*"
+
+          volumeMounts:
+            - name: static
+              mountPath: /vol/web/static
+
+            - name: media
+              mountPath: /vol/web/media
+
+            - name: aws-secrets
+              mountPath: /mnt/secrets-store
+              readOnly: true
+
+      volumes:
+        - name: static
+          persistentVolumeClaim:
+            claimName: {{ .Values.django.volumes.staticClaim }}
+
+        - name: media
+          persistentVolumeClaim:
+            claimName: {{ .Values.django.volumes.mediaClaim }}
+
+        - name: aws-secrets
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: {{ .Values.django.volumes.secretProviderClass }}
+:::

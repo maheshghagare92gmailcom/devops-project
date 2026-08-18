@@ -1,6 +1,10 @@
 resource "aws_route53_zone" "main" {
   name = "maheshdevops.shop"
 
+  lifecycle {
+    prevent_destroy = true
+  }
+
   tags = {
     Name        = "maheshdevops.shop"
     Environment = var.environment_name

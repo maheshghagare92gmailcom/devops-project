@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: proxy
+
+spec:
+  replicas: {{ .Values.proxy.replicas }}
+
+  selector:
+    matchLabels:
+      app: proxy
+
+  template:
+    metadata:
+      labels:
+        app: proxy
+
+    spec:
+      containers:
+        - name: nginx
+
+          image: "{{ .Values.proxy.image.repository }}:{{ .Values.proxy.image.tag }}"
+
+          ports:
+            - containerPort: {{ .Values.proxy.containerPort }}
+
+          env:
+            - name: APP_HOST
+              value: {{ .Values.proxy.appHost | quote }}
+
+            - name: APP_PORT
+              value: {{ .Values.proxy.appPort | quote }}
+
+          volumeMounts:
+            - name: static
+              mountPath: /vol/static
+              readOnly: true
+
+            - name: media
+              mountPath: /vol/media
+              readOnly: true
+
+      volumes:
+        - name: static
+          persistentVolumeClaim:
+            claimName: {{ .Values.proxy.volumes.staticClaim }}
+
+        - name: media
+          persistentVolumeClaim:
+            claimName: {{ .Values.proxy.volumes.mediaClaim }}
