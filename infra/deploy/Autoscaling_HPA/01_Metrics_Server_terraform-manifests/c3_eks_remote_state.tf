@@ -1,5 +1,3 @@
-
-
 # --------------------------------------------------------------------
 # Reference the Remote State from EKS Project
 # --------------------------------------------------------------------
@@ -7,8 +5,8 @@ data "terraform_remote_state" "eks" {
   backend = "s3"
 
   config = {
-    bucket         = "devops-recipe-app-tf-state-mahesh-eks4"
-    key            = "tf-state-deploy"        # Path to the EKS tfstate file within the bucket
+    bucket = "devops-recipe-app-tf-state-mahesh-eks4"     # Name of the remote S3 bucket where the EKS state is stored
+    key    = "tf-state-deploy"        # Path to the EKS tfstate file within the bucket
     region = var.aws_region                    # Region where the S3 bucket exist
   }
 }

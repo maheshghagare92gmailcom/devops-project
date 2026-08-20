@@ -1,0 +1,244 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: django
+  labels:
+    app: django
+    component: service
+
+spec:
+  replicas: 1
+
+  # ============================================================
+  # ROLLING UPDATE STRATEGY
+  # ============================================================
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+
+  selector:
+    matchLabels:
+      app: django
+
+  template:
+
+    metadata:
+      labels:
+        app: django
+        component: service
+
+      # ========================================================
+      # PROMETHEUS ANNOTATIONS
+      # ========================================================
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9000"
+
+    spec:
+
+      # ========================================================
+      # TOPOLOGY SPREAD - ACROSS NODES
+      # ========================================================
+      topologySpreadConstraints:
+
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+
+          labelSelector:
+            matchLabels:
+              app: django
+              component: service
+
+        # ======================================================
+        # TOPOLOGY SPREAD - ACROSS AVAILABILITY ZONES
+        # ======================================================
+
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+
+          labelSelector:
+            matchLabels:
+              app: django
+              component: service
+
+      # ========================================================
+      # KARPENTER NODE SELECTOR
+      # ========================================================
+      # Django pods will run only on Karpenter ON-DEMAND nodes.
+      # ========================================================
+
+      nodeSelector:
+        karpenter.sh/capacity-type: on-demand
+
+      # ========================================================
+      # SERVICE ACCOUNT
+      # ========================================================
+
+      serviceAccountName: django
+
+      # ========================================================
+      # POD SECURITY CONTEXT
+      # ========================================================
+      # Docker image runs as:
+      # uid=101(django-user)
+      # gid=101(django-user)
+      # ========================================================
+
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        fsGroup: 101
+
+      containers:
+
+        - name: django
+
+          # ======================================================
+          # CONTAINER SECURITY CONTEXT
+          # ======================================================
+
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+
+          # ======================================================
+          # IMAGE
+          # ======================================================
+
+          image: 360305064293.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-app-final:new
+
+          # ======================================================
+          # IMAGE PULL POLICY
+          # ======================================================
+
+          imagePullPolicy: IfNotPresent
+
+          # ======================================================
+          # CONTAINER PORT
+          # ======================================================
+
+          ports:
+            - name: http
+              containerPort: 9000
+              protocol: TCP
+
+          # ======================================================
+          # READINESS PROBE
+          # ======================================================
+          # Django health endpoint:
+          # /api/health-check/
+          #
+          # Container listens on port 9000.
+          # ======================================================
+
+          readinessProbe:
+            httpGet:
+              path: /api/health-check/
+              port: 9000
+
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 3
+
+          # ======================================================
+          # RESOURCE REQUESTS / LIMITS
+          # ======================================================
+          # Required for HPA CPU/memory utilization.
+          # ======================================================
+
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          # ======================================================
+          # ENVIRONMENT VARIABLES
+          # ======================================================
+
+          env:
+
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DJANGO_SECRET_KEY
+
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DB_HOST
+
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DB_NAME
+
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DB_USER
+
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: app-secret
+                  key: DB_PASS
+
+            - name: ALLOWED_HOSTS
+              value: "*"
+
+          # ======================================================
+          # VOLUME MOUNTS
+          # ======================================================
+
+          volumeMounts:
+
+            - name: static
+              mountPath: /vol/web/static
+
+            - name: media
+              mountPath: /vol/web/media
+
+            - name: aws-secrets
+              mountPath: /mnt/secrets-store
+              readOnly: true
+
+      # ========================================================
+      # VOLUMES
+      # ========================================================
+
+      volumes:
+
+        - name: static
+          persistentVolumeClaim:
+            claimName: efs-pvc-static
+
+        - name: media
+          persistentVolumeClaim:
+            claimName: efs-pvc
+
+        - name: aws-secrets
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+
+            volumeAttributes:
+              secretProviderClass: django-db-secrets
