@@ -15,15 +15,15 @@ resource "helm_release" "secrets_store_csi_driver" {
   force_update      = true
 
   set = [
-  {
-    name  = "syncSecret.enabled"
-    value = "true"
-  },
-  {
-    name  = "tokenRequests[0].audience"
-    value = "pods.eks.amazonaws.com"
-  }
-]
+    {
+      name  = "syncSecret.enabled"
+      value = "true"
+    },
+    {
+      name  = "tokenRequests[0].audience"
+      value = "pods.eks.amazonaws.com"
+    }
+  ]
 
   wait            = true
   timeout         = 600

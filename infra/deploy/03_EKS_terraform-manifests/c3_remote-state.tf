@@ -5,9 +5,9 @@ data "terraform_remote_state" "vpc" {
   backend = "s3"
 
   config = {
-    bucket = "devops-recipe-app-tf-state-mahesh"                                         # Name of the remote S3 bucket where the VPC state is stored
-    key    = "tf-state-deploy" # Path to the VPC tfstate file within the bucket
-    region = var.aws_region                                                         # Region where the S3 bucket and DynamoDB table exist
+    bucket = "devops-recipe-app-tf-state-mahesh" # Name of the remote S3 bucket where the VPC state is stored
+    key    = "tf-state-deploy"                   # Path to the VPC tfstate file within the bucket
+    region = var.aws_region                      # Region where the S3 bucket and DynamoDB table exist
     # workspace_key_prefix = "tf-state-deploy-env"
 
 

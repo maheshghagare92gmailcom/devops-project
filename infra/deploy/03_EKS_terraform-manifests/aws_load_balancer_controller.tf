@@ -189,7 +189,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
 
         Condition = {
           Null = {
-            "aws:RequestTag/elbv2.k8s.aws/cluster" = "true"
+            "aws:RequestTag/elbv2.k8s.aws/cluster"  = "true"
             "aws:ResourceTag/elbv2.k8s.aws/cluster" = "false"
           }
         }
@@ -264,11 +264,11 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
         Effect = "Allow"
 
         Action = [
-            "elasticloadbalancing:AddTags",
-            "elasticloadbalancing:RemoveTags"
-  ]
+          "elasticloadbalancing:AddTags",
+          "elasticloadbalancing:RemoveTags"
+        ]
 
-  Resource = "*"
+        Resource = "*"
       },
 
       {

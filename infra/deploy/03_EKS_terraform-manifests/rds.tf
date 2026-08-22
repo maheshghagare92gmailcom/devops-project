@@ -176,7 +176,7 @@ output "django_postgres_port" {
 output "django_postgres_database_name" {
   description = "PostgreSQL database name"
   value       = aws_db_instance.django_postgres.db_name
-  sensitive = true
+  sensitive   = true
 }
 
 output "django_postgres_username" {
