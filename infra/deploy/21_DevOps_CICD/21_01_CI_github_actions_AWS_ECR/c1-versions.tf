@@ -9,8 +9,8 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "tfstate-dev-us-east-1-lqvonw"
-    key            = "ecr-oidc/dev/terraform.tfstate"
+    bucket         = "devops-recipe-app-tf-state-mahesh-eks4"
+    key            = "ecr-oidc/terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true
     dynamodb_table = "terraform-lock-table"
