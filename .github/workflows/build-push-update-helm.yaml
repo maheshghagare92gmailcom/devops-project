@@ -49,9 +49,7 @@ jobs:
           echo "Actor: ${{ github.actor }}"
           echo "Workflow: ${{ github.workflow }}"
 
-      - name: Debug GitHub OIDC token
-        uses: github/actions-oidc-debugger@v1
-        continue-on-error: true
+     
 
 
 
