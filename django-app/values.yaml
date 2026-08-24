@@ -70,3 +70,9 @@ deployments:
   proxy:
     image:
       tag: sha-f825ed3
+django:
+  image:
+    tag: ""
+proxy:
+  image:
+    tag: ""
