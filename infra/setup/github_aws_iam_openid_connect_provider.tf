@@ -33,7 +33,7 @@ data "aws_iam_policy_document" "github_trust_policy" {
       variable = "token.actions.githubusercontent.com:sub"
 
       values = [
-        "repo:maheshghagare92gmailcom/devops-project:*"
+        "repo:maheshghagare92gmailcom@142685349/devops-project@1330623138:ref:refs/heads/*"
       ]
     }
 
