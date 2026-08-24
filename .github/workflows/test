@@ -1,0 +1,35 @@
+name: Test AWS OIDC
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+  test-oidc:
+    name: Test AWS OIDC
+    runs-on: ubuntu-22.04
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::360305064293:role/github-actions-oidc-role
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Verify AWS identity
+        run: |
+          echo "=========================================="
+          echo "AWS OIDC authentication successful"
+          echo "=========================================="
+
+          aws sts get-caller-identity
