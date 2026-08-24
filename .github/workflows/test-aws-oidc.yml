@@ -13,7 +13,7 @@ env:
 jobs:
   test-oidc:
     name: Test AWS OIDC
-    runs-on: ubuntu-22.04         P
+    runs-on: ubuntu-22.04        P
 
     steps:
       - name: Checkout
