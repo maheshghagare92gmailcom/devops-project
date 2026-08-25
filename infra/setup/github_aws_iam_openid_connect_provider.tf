@@ -69,6 +69,13 @@ resource "aws_iam_role_policy_attachment" "github_ecr_access" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
 }
 
+resource "aws_iam_role_policy_attachment" "github_admin_access" {
+  role = aws_iam_role.github_actions_role.name
+
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
+
+
 output "github_actions_role_arn" {
   description = "IAM role ARN used by GitHub Actions"
   value       = aws_iam_role.github_actions_role.arn
