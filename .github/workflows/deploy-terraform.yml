@@ -1,0 +1,215 @@
+name: Deploy Terraform
+
+on:
+  push:
+    branches:
+      - main
+      - prod
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: terraform-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+
+jobs:
+
+  # ============================================================
+  # TERRAFORM VALIDATION
+  # ============================================================
+  test-terraform:
+    name: Test Terraform
+
+    uses: ./.github/workflows/test-terraform.yml
+
+
+  # ============================================================
+  # TERRAFORM DEPLOYMENT
+  # ============================================================
+  deploy:
+    name: Terraform Deploy
+
+    needs:
+      - test-terraform
+
+    runs-on: ubuntu-22.04
+
+    steps:
+
+      # ---------------------------------------------------------
+      # Checkout
+      # ---------------------------------------------------------
+      - name: Checkout
+        uses: actions/checkout@v4
+
+
+      # ---------------------------------------------------------
+      # Configure AWS using GitHub OIDC
+      # ---------------------------------------------------------
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::360305064293:role/github-actions-oidc-role
+          aws-region: ${{ env.AWS_REGION }}
+
+
+      # ---------------------------------------------------------
+      # Verify AWS Identity
+      # ---------------------------------------------------------
+      - name: Verify AWS Identity
+        run: |
+          aws sts get-caller-identity
+
+
+      # ---------------------------------------------------------
+      # Select Terraform Environment
+      #
+      # main -> staging
+      # prod -> production
+      # ---------------------------------------------------------
+      - name: Set Terraform Environment
+        run: |
+
+          if [[ "${GITHUB_REF_NAME}" == "prod" ]]; then
+            echo "TF_ENV=prod" >> "$GITHUB_ENV"
+          else
+            echo "TF_ENV=staging" >> "$GITHUB_ENV"
+          fi
+
+
+      # ---------------------------------------------------------
+      # Display Environment
+      # ---------------------------------------------------------
+      - name: Display Terraform Environment
+        run: |
+
+          echo "=========================================="
+          echo "Terraform Deployment"
+          echo "=========================================="
+
+          echo "Git branch:"
+          echo "${GITHUB_REF_NAME}"
+
+          echo ""
+          echo "Terraform workspace:"
+          echo "${TF_ENV}"
+
+          echo "=========================================="
+
+
+      # =========================================================
+      # APPLY VPC
+      # =========================================================
+      - name: Terraform Apply VPC
+        working-directory: infra
+        run: |
+
+          set -e
+
+          echo "=========================================="
+          echo "Applying VPC"
+          echo "Workspace: ${TF_ENV}"
+          echo "=========================================="
+
+
+          docker compose run --rm \
+            --entrypoint "" \
+            -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
+            -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
+            -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
+            -e AWS_REGION="$AWS_REGION" \
+            -e TF_VAR_env="$TF_ENV" \
+            terraform sh -c "
+
+              terraform -chdir=deploy/01_VPC_terraform-manifests init &&
+
+              terraform -chdir=deploy/01_VPC_terraform-manifests \
+                workspace select -or-create ${TF_ENV} &&
+
+              terraform -chdir=deploy/01_VPC_terraform-manifests \
+                workspace show &&
+
+              terraform -chdir=deploy/01_VPC_terraform-manifests \
+                apply -auto-approve
+
+            "
+
+
+      # =========================================================
+      # APPLY EKS
+      # =========================================================
+      - name: Terraform Apply EKS
+        working-directory: infra
+        run: |
+
+          set -e
+
+          echo "=========================================="
+          echo "Applying EKS"
+          echo "Workspace: ${TF_ENV}"
+          echo "=========================================="
+
+
+          docker compose run --rm \
+            --entrypoint "" \
+            -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
+            -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
+            -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
+            -e AWS_REGION="$AWS_REGION" \
+            -e TF_VAR_env="$TF_ENV" \
+            terraform sh -c "
+
+              helm repo add eks \
+                https://aws.github.io/eks-charts
+
+              helm repo add efs \
+                https://kubernetes-sigs.github.io/aws-efs-csi-driver/
+
+              helm repo add csi \
+                https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
+
+              helm repo add argo \
+                https://argoproj.github.io/argo-helm
+
+              helm repo update
+
+              terraform -chdir=deploy/03_EKS_terraform-manifests init &&
+
+              terraform -chdir=deploy/03_EKS_terraform-manifests \
+                workspace select -or-create ${TF_ENV} &&
+
+              terraform -chdir=deploy/03_EKS_terraform-manifests \
+                workspace show &&
+
+              terraform -chdir=deploy/03_EKS_terraform-manifests \
+                apply -auto-approve
+
+            "
+
+
+      # =========================================================
+      # COMPLETE
+      # =========================================================
+      - name: Terraform Deployment Complete
+        run: |
+
+          echo "=========================================="
+          echo "Terraform deployment completed"
+          echo "=========================================="
+
+          echo "Branch:"
+          echo "${GITHUB_REF_NAME}"
+
+          echo ""
+          echo "Terraform workspace:"
+          echo "${TF_ENV}"
+
+          echo ""
+          echo "Infrastructure deployment completed."
+
+          echo "=========================================="

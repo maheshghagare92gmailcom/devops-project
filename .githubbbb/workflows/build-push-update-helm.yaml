@@ -25,8 +25,16 @@ env:
 
 jobs:
 
+  test-lint:
+    name: Test and Lint
+    uses: ./.github/workflows/test-and-lint.yml
+    secrets:
+      DOCKERHUB_USER: ${{ vars.DOCKERHUB_USER }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
   build-and-push:
     name: Build and Push Images
+    needs: [test-lint]
     runs-on: ubuntu-latest
 
     steps:
@@ -180,7 +188,7 @@ jobs:
           git commit \
             -m "Update Django and proxy images to ${SHA_TAG}"
 
-          git push origin main
+          git push origin HEAD:${GITHUB_REF_NAME}
 
 
       # ---------------------------------------------------------
