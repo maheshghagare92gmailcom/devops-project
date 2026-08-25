@@ -188,7 +188,7 @@ jobs:
 
               terraform -chdir=deploy/03_EKS_terraform-manifests \
                 workspace show &&
-              terraform -chdir=deploy/03_EKS_terraform-manifests \ 
+              terraform -chdir=deploy/03_EKS_terraform-manifests \
                 plan 
               # terraform -chdir=deploy/03_EKS_terraform-manifests \
               #   apply -auto-approve
