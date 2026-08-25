@@ -2,12 +2,25 @@ name: Checks
 
 on:
   pull_request:
-    branches: [main]
+    branches:
+      - main
+
+permissions:
+  contents: read
 
 jobs:
-  test-lint:
-    name: Test and Lint
-    uses: ./.github/workflows/test-and-lint.yml
-    secrets:
-      DOCKERHUB_USER: ${{ vars.DOCKERHUB_USER }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  # ============================================================
+  # APPLICATION TESTS
+  # ============================================================
+  test-application:
+    name: Test Application
+    uses: ./.github/workflows/test-application.yml
+
+
+  # ============================================================
+  # TERRAFORM TESTS
+  # ============================================================
+  test-terraform:
+    name: Test Terraform
+    uses: ./.github/workflows/test-terraform.yml

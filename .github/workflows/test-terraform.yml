@@ -1,0 +1,75 @@
+name: Test Terraform
+
+on:
+  workflow_call:
+
+jobs:
+
+  terraform:
+    name: Terraform Validation
+    runs-on: ubuntu-22.04
+
+    strategy:
+      fail-fast: true
+
+      matrix:
+        dir:
+          - setup
+          - deploy/01_VPC_terraform-manifests
+          - deploy/03_EKS_terraform-manifests
+
+    steps:
+
+      # ---------------------------------------------------------
+      # Checkout
+      # ---------------------------------------------------------
+      - name: Checkout
+        uses: actions/checkout@v4
+
+
+      # ---------------------------------------------------------
+      # Verify Terraform Container
+      # ---------------------------------------------------------
+      - name: Verify Terraform Container
+        working-directory: infra
+        run: |
+          docker compose run --rm \
+            --entrypoint sh \
+            terraform \
+            -c "terraform version"
+
+
+      # ---------------------------------------------------------
+      # Terraform Init
+      # Backend disabled because this is validation only
+      # ---------------------------------------------------------
+      - name: Terraform Init
+        working-directory: infra
+        run: |
+          docker compose run --rm terraform \
+            -chdir=${{ matrix.dir }} \
+            init \
+            -backend=false
+
+
+      # ---------------------------------------------------------
+      # Terraform Format Check
+      # ---------------------------------------------------------
+      - name: Terraform Format Check
+        working-directory: infra
+        run: |
+          docker compose run --rm terraform \
+            -chdir=${{ matrix.dir }} \
+            fmt \
+            -check
+
+
+      # ---------------------------------------------------------
+      # Terraform Validate
+      # ---------------------------------------------------------
+      - name: Terraform Validate
+        working-directory: infra
+        run: |
+          docker compose run --rm terraform \
+            -chdir=${{ matrix.dir }} \
+            validate
