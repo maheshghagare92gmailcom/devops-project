@@ -1,11 +1,11 @@
 name: Deploy Application
 
 on:
-  push:
-    branches:
-      - main
-      - prod
-
+  # push:
+  #   branches:
+  #     - main
+  #     - prod
+  workflow_call:
 permissions:
   id-token: write
   contents: write
