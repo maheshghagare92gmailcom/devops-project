@@ -1,17 +1,17 @@
-# resource "aws_route53_zone" "main" {
-#   name = "maheshdevops.shop"
+resource "aws_route53_zone" "main" {
+  name = "maheshdevops.shop"
 
-#   lifecycle {
-#     prevent_destroy = true
-#   }
+  lifecycle {
+    prevent_destroy = true
+  }
 
-#   tags = {
-#     Name        = "maheshdevops.shop"
-#     Environment = var.environment_name
-#   }
-# }
+  tags = {
+    Name        = "maheshdevops.shop"
+    Environment = var.environment_name
+  }
+}
 
-# output "route53_nameservers" {
-#   description = "Route 53 nameservers to configure at Hostinger"
-#   value       = aws_route53_zone.main.name_servers
-# }
+output "route53_nameservers" {
+  description = "Route 53 nameservers to configure at Hostinger"
+  value       = aws_route53_zone.main.name_servers
+}
