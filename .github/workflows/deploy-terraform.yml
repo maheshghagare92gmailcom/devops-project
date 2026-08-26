@@ -265,13 +265,13 @@ jobs:
           echo "=========================================="
 
 
-      ========================================================
-      TERRAFORM APPLY - VPC
+      # ========================================================
+      # TERRAFORM APPLY - VPC
       
-      CURRENTLY DISABLED
+      # CURRENTLY DISABLED
       
-      Uncomment only when you are ready to apply.
-      ========================================================
+      # Uncomment only when you are ready to apply.
+      # ========================================================
 
       - name: Terraform Apply VPC
         working-directory: infra
