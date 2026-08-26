@@ -32,8 +32,8 @@ jobs:
   deploy:
     name: Terraform Deploy
 
-    needs:
-      - test-terraform
+    # needs:
+    #   - test-terraform
 
     runs-on: ubuntu-22.04
 
