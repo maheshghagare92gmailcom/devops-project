@@ -10,7 +10,7 @@ data "terraform_remote_state" "vpc" {
     region               = "us-east-1"
     workspace_key_prefix = "terraform-vpc"
 
-    
+
   }
 
   workspace = terraform.workspace
