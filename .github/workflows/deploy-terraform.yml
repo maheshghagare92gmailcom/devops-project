@@ -137,8 +137,8 @@ jobs:
               
               terraform -chdir=deploy/01_VPC_terraform-manifests \
                 plan
-              # terraform -chdir=deploy/01_VPC_terraform-manifests \
-              #   apply -auto-approve
+              terraform -chdir=deploy/01_VPC_terraform-manifests \
+                apply -auto-approve
 
             "
 
@@ -146,55 +146,55 @@ jobs:
       # =========================================================
       # APPLY EKS
       # =========================================================
-      - name: Terraform Apply EKS
-        working-directory: infra
-        run: |
+      # - name: Terraform Apply EKS
+      #   working-directory: infra
+      #   run: |
 
-          set -e
+      #     set -e
 
-          echo "=========================================="
-          echo "Applying EKS"
-          echo "Workspace: ${TF_ENV}"
-          echo "=========================================="
-
-
-          docker compose run --rm \
-            --entrypoint "" \
-            -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
-            -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
-            -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
-            -e AWS_REGION="$AWS_REGION" \
-            -e TF_VAR_env="$TF_ENV" \
-            terraform sh -c "
-
-              helm repo add eks \
-                https://aws.github.io/eks-charts
-
-              helm repo add efs \
-                https://kubernetes-sigs.github.io/aws-efs-csi-driver/
-
-              helm repo add csi \
-                https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
-
-              helm repo add argo \
-                https://argoproj.github.io/argo-helm
-
-              helm repo update
-
-              terraform -chdir=deploy/03_EKS_terraform-manifests init &&
-
-              terraform -chdir=deploy/03_EKS_terraform-manifests \
-                workspace select -or-create ${TF_ENV} &&
-
-              terraform -chdir=deploy/03_EKS_terraform-manifests \
-                workspace show &&
-              terraform -chdir=deploy/03_EKS_terraform-manifests destroy  -auto-approve
+      #     echo "=========================================="
+      #     echo "Applying EKS"
+      #     echo "Workspace: ${TF_ENV}"
+      #     echo "=========================================="
 
 
-              # terraform -chdir=deploy/03_EKS_terraform-manifests \
-              #   apply -auto-approve
+      #     docker compose run --rm \
+      #       --entrypoint "" \
+      #       -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
+      #       -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
+      #       -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
+      #       -e AWS_REGION="$AWS_REGION" \
+      #       -e TF_VAR_env="$TF_ENV" \
+      #       terraform sh -c "
 
-            "
+      #         helm repo add eks \
+      #           https://aws.github.io/eks-charts
+
+      #         helm repo add efs \
+      #           https://kubernetes-sigs.github.io/aws-efs-csi-driver/
+
+      #         helm repo add csi \
+      #           https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
+
+      #         helm repo add argo \
+      #           https://argoproj.github.io/argo-helm
+
+      #         helm repo update
+
+      #         terraform -chdir=deploy/03_EKS_terraform-manifests init &&
+
+      #         terraform -chdir=deploy/03_EKS_terraform-manifests \
+      #           workspace select -or-create ${TF_ENV} &&
+
+      #         terraform -chdir=deploy/03_EKS_terraform-manifests \
+      #           workspace show &&
+      #         terraform -chdir=deploy/03_EKS_terraform-manifests destroy  -auto-approve
+
+
+      #         # terraform -chdir=deploy/03_EKS_terraform-manifests \
+      #         #   apply -auto-approve
+
+      #       "
 
 
       # =========================================================
