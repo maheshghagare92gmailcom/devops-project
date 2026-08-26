@@ -297,13 +297,13 @@ jobs:
       #       '
 
 
-      ========================================================
-      TERRAFORM PLAN - EKS
+      # ========================================================
+      # TERRAFORM PLAN - EKS
       
-      CURRENTLY DISABLED
+      # CURRENTLY DISABLED
       
-      Keep disabled while Route 53 state cleanup is being done.
-      ========================================================
+      # Keep disabled while Route 53 state cleanup is being done.
+      # ========================================================
 
       - name: Terraform Plan EKS
         working-directory: infra
