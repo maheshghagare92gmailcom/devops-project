@@ -1,0 +1,510 @@
+name: Deploy Terraform
+
+on:
+
+  # push:
+  #   branches:
+  #     - main
+  #     - prod
+
+  workflow_dispatch:
+
+
+# ============================================================
+# GITHUB ACTIONS PERMISSIONS
+# ============================================================
+
+permissions:
+  id-token: write
+  contents: read
+
+
+# ============================================================
+# CONCURRENCY
+# ============================================================
+
+concurrency:
+  group: terraform-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+
+# ============================================================
+# ENVIRONMENT
+# ============================================================
+
+env:
+  AWS_REGION: us-east-1
+
+
+jobs:
+
+  # ============================================================
+  # TERRAFORM VALIDATION
+  # ============================================================
+
+  test-terraform:
+    name: Test Terraform
+
+    uses: ./.github/workflows/test-terraform.yml
+
+
+  # ============================================================
+  # TERRAFORM DEPLOYMENT
+  # ============================================================
+
+  deploy:
+    name: Terraform Deploy
+
+    needs:
+      - test-terraform
+
+    runs-on: ubuntu-22.04
+
+
+    steps:
+
+      # ========================================================
+      # CHECKOUT
+      # ========================================================
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+
+      # ========================================================
+      # CONFIGURE AWS USING GITHUB OIDC
+      # ========================================================
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+
+        with:
+          role-to-assume: arn:aws:iam::360305064293:role/github-actions-oidc-role
+          aws-region: ${{ env.AWS_REGION }}
+
+
+      # ========================================================
+      # VERIFY AWS IDENTITY
+      # ========================================================
+
+      - name: Verify AWS Identity
+        run: |
+
+          echo "=========================================="
+          echo "AWS Identity"
+          echo "=========================================="
+
+          aws sts get-caller-identity
+
+          echo "=========================================="
+
+
+      # ========================================================
+      # SELECT TERRAFORM ENVIRONMENT
+      #
+      # main -> staging
+      # prod -> prod
+      # ========================================================
+
+      - name: Set Terraform Environment
+        run: |
+
+          if [[ "${GITHUB_REF_NAME}" == "prod" ]]; then
+
+            echo "TF_ENV=prod" >> "$GITHUB_ENV"
+
+          else
+
+            echo "TF_ENV=staging" >> "$GITHUB_ENV"
+
+          fi
+
+
+      # ========================================================
+      # DISPLAY ENVIRONMENT
+      # ========================================================
+
+      - name: Display Terraform Environment
+        run: |
+
+          echo "=========================================="
+          echo "Terraform Deployment"
+          echo "=========================================="
+
+          echo "Git branch:"
+          echo "${GITHUB_REF_NAME}"
+
+          echo ""
+
+          echo "Terraform workspace:"
+          echo "${TF_ENV}"
+
+          echo "=========================================="
+
+
+      # ========================================================
+      # TERRAFORM PLAN - VPC
+      # ========================================================
+
+      - name: Terraform Plan VPC
+        working-directory: infra
+
+        run: |
+
+          set -e
+
+          echo "=========================================="
+          echo "Terraform Plan - VPC"
+          echo "=========================================="
+
+          echo "Workspace:"
+          echo "${TF_ENV}"
+
+          echo "=========================================="
+
+
+          # ----------------------------------------------------
+          # TERRAFORM INIT
+          # ----------------------------------------------------
+
+          echo ""
+          echo "Initializing Terraform..."
+
+          docker compose run --rm \
+            --entrypoint "" \
+            -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
+            -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
+            -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
+            -e AWS_REGION="$AWS_REGION" \
+            -e TF_VAR_env="$TF_ENV" \
+            terraform \
+            sh -c '
+              set -e
+
+              terraform \
+                -chdir=deploy/01_VPC_terraform-manifests \
+                init
+            '
+
+
+          # ----------------------------------------------------
+          # SELECT TERRAFORM WORKSPACE
+          # ----------------------------------------------------
+
+          echo ""
+          echo "Selecting Terraform workspace..."
+
+          docker compose run --rm \
+            --entrypoint "" \
+            -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
+            -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
+            -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
+            -e AWS_REGION="$AWS_REGION" \
+            -e TF_VAR_env="$TF_ENV" \
+            terraform \
+            sh -c '
+              set -e
+
+              terraform \
+                -chdir=deploy/01_VPC_terraform-manifests \
+                workspace select -or-create "$TF_VAR_env"
+            '
+
+
+          # ----------------------------------------------------
+          # DISPLAY TERRAFORM WORKSPACE
+          # ----------------------------------------------------
+
+          echo ""
+          echo "Current Terraform workspace..."
+
+          docker compose run --rm \
+            --entrypoint "" \
+            -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
+            -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
+            -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
+            -e AWS_REGION="$AWS_REGION" \
+            -e TF_VAR_env="$TF_ENV" \
+            terraform \
+            sh -c '
+              set -e
+
+              terraform \
+                -chdir=deploy/01_VPC_terraform-manifests \
+                workspace show
+            '
+
+
+          # ----------------------------------------------------
+          # TERRAFORM PLAN
+          # ----------------------------------------------------
+
+          echo ""
+          echo "Running Terraform plan..."
+
+          docker compose run --rm \
+            --entrypoint "" \
+            -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
+            -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
+            -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
+            -e AWS_REGION="$AWS_REGION" \
+            -e TF_VAR_env="$TF_ENV" \
+            terraform \
+            sh -c '
+              set -e
+
+              terraform \
+                -chdir=deploy/01_VPC_terraform-manifests \
+                plan
+            '
+
+
+          echo ""
+          echo "=========================================="
+          echo "VPC Terraform Plan Completed"
+          echo "=========================================="
+
+
+      # ========================================================
+      # TERRAFORM APPLY - VPC
+      # ========================================================
+
+      - name: Terraform Apply VPC
+        working-directory: infra
+
+        run: |
+
+          set -e
+
+          echo "=========================================="
+          echo "Terraform Apply - VPC"
+          echo "=========================================="
+
+          docker compose run --rm \
+            --entrypoint "" \
+            -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
+            -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
+            -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
+            -e AWS_REGION="$AWS_REGION" \
+            -e TF_VAR_env="$TF_ENV" \
+            terraform \
+            sh -c '
+              set -e
+
+              terraform \
+                -chdir=deploy/01_VPC_terraform-manifests \
+                apply -auto-approve
+            '
+
+
+      # ========================================================
+      # TERRAFORM PLAN - EKS
+      #
+      # EKS APPLY IS STILL DISABLED
+      # ========================================================
+
+      - name: Terraform Plan EKS
+        working-directory: infra
+
+        run: |
+
+          set -e
+
+          echo "=========================================="
+          echo "Terraform Plan - EKS"
+          echo "=========================================="
+
+          echo "Expected Workspace:"
+          echo "${TF_ENV}"
+
+          echo "=========================================="
+
+
+          # ====================================================
+          # RUN EVERYTHING INSIDE SAME TERRAFORM CONTAINER
+          # ====================================================
+
+          docker compose run --rm \
+            --entrypoint "" \
+            -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
+            -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
+            -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
+            -e AWS_REGION="$AWS_REGION" \
+            -e TF_VAR_env="$TF_ENV" \
+            terraform \
+            sh -c '
+
+              set -e
+
+
+              echo ""
+              echo "=========================================="
+              echo "AWS IDENTITY"
+              echo "=========================================="
+
+              aws sts get-caller-identity
+
+
+              echo ""
+              echo "=========================================="
+              echo "TERRAFORM VERSION"
+              echo "=========================================="
+
+              terraform version
+
+
+              echo ""
+              echo "=========================================="
+              echo "HELM REPOSITORIES"
+              echo "=========================================="
+
+              helm repo add eks \
+                https://aws.github.io/eks-charts
+
+              helm repo add efs \
+                https://kubernetes-sigs.github.io/aws-efs-csi-driver/
+
+              helm repo add csi \
+                https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
+
+              helm repo add argo \
+                https://argoproj.github.io/argo-helm
+
+              helm repo update
+
+
+              echo ""
+              echo "=========================================="
+              echo "TERRAFORM INIT"
+              echo "=========================================="
+
+              terraform \
+                -chdir=deploy/03_EKS_terraform-manifests \
+                init
+
+
+              echo ""
+              echo "=========================================="
+              echo "TERRAFORM WORKSPACE"
+              echo "=========================================="
+
+              terraform \
+                -chdir=deploy/03_EKS_terraform-manifests \
+                workspace select -or-create "$TF_VAR_env"
+
+
+              echo ""
+              echo "Current Terraform workspace:"
+
+              terraform \
+                -chdir=deploy/03_EKS_terraform-manifests \
+                workspace show
+
+
+              echo ""
+              echo "All Terraform workspaces:"
+
+              terraform \
+                -chdir=deploy/03_EKS_terraform-manifests \
+                workspace list
+
+
+              echo ""
+              echo "=========================================="
+              echo "BACKEND CONFIGURATION"
+              echo "=========================================="
+
+              echo "Terraform backend currently initialized as:"
+
+              grep -E \
+                "\"bucket\"|\"key\"|\"workspace_key_prefix\"|\"region\"|\"dynamodb_table\"" \
+                deploy/03_EKS_terraform-manifests/.terraform/terraform.tfstate
+
+
+              echo ""
+              echo "=========================================="
+              echo "TERRAFORM STATE RESOURCES"
+              echo "=========================================="
+
+              terraform \
+                -chdir=deploy/03_EKS_terraform-manifests \
+                state list | sort
+
+
+              echo ""
+              echo "=========================================="
+              echo "TERRAFORM PLAN"
+              echo "=========================================="
+
+              terraform \
+                -chdir=deploy/03_EKS_terraform-manifests \
+                plan
+
+
+              echo ""
+              echo "=========================================="
+              echo "EKS Terraform Plan Completed"
+              echo "=========================================="
+            '
+
+
+      # ========================================================
+      # TERRAFORM APPLY - EKS
+      #
+      # CURRENTLY DISABLED
+      #
+      # Enable only after EKS plan is verified.
+      # ========================================================
+
+      # - name: Terraform Apply EKS
+      #   working-directory: infra
+
+      #   run: |
+
+      #     set -e
+
+      #     echo "=========================================="
+      #     echo "Terraform Apply - EKS"
+      #     echo "=========================================="
+
+      #     docker compose run --rm \
+      #       --entrypoint "" \
+      #       -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
+      #       -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
+      #       -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
+      #       -e AWS_REGION="$AWS_REGION" \
+      #       -e TF_VAR_env="$TF_ENV" \
+      #       terraform \
+      #       sh -c '
+      #         set -e
+
+      #         terraform \
+      #           -chdir=deploy/03_EKS_terraform-manifests \
+      #           apply -auto-approve
+      #       '
+
+
+      # ========================================================
+      # COMPLETE
+      # ========================================================
+
+      - name: Terraform Deployment Complete
+        run: |
+
+          echo "=========================================="
+          echo "Terraform Deployment Completed"
+          echo "=========================================="
+
+          echo "Branch:"
+          echo "${GITHUB_REF_NAME}"
+
+          echo ""
+
+          echo "Terraform workspace:"
+          echo "${TF_ENV}"
+
+          echo ""
+
+          echo "Infrastructure plan completed."
+
+          echo "=========================================="
