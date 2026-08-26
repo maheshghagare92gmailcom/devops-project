@@ -140,7 +140,7 @@ jobs:
       #         terraform -chdir=deploy/01_VPC_terraform-manifests \
       #           apply -auto-approve
 
-      #       "
+            "
 
 
       # =========================================================
