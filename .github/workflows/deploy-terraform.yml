@@ -296,27 +296,9 @@ jobs:
                 apply -auto-approve
             '
 
-      - name: Debug Terraform environment
-        run: |
-          echo "=== AWS Identity ==="
-          aws sts get-caller-identity
+      
 
-          echo "=== Terraform Version ==="
-          terraform version
-
-          echo "=== Terraform Workspace ==="
-          terraform workspace show
-
-          echo "=== Terraform Workspaces ==="
-          terraform workspace list
-
-          echo "=== Backend ==="
-          grep -E '"bucket"|"key"|"workspace_key_prefix"|"region"|"dynamodb_table"' .terraform/terraform.tfstate
-
-      - name: Debug Terraform state
-        run: |
-          echo "=== State Resources ==="
-          terraform state list | sort
+      
       # ========================================================
       # TERRAFORM PLAN - EKS
       
