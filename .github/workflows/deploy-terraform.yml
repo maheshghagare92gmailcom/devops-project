@@ -297,72 +297,72 @@ jobs:
       #       '
 
 
-      # ========================================================
-      # TERRAFORM PLAN - EKS
-      #
-      # CURRENTLY DISABLED
-      #
-      # Keep disabled while Route 53 state cleanup is being done.
-      # ========================================================
+      ========================================================
+      TERRAFORM PLAN - EKS
+      
+      CURRENTLY DISABLED
+      
+      Keep disabled while Route 53 state cleanup is being done.
+      ========================================================
 
-      # - name: Terraform Plan EKS
-      #   working-directory: infra
-      #
-      #   run: |
-      #
-      #     set -e
-      #
-      #     echo "=========================================="
-      #     echo "Terraform Plan - EKS"
-      #     echo "=========================================="
-      #
-      #     echo "Workspace:"
-      #     echo "${TF_ENV}"
-      #
-      #     echo "=========================================="
-      #
-      #
-      #     docker compose run --rm \
-      #       --entrypoint "" \
-      #       -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
-      #       -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
-      #       -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
-      #       -e AWS_REGION="$AWS_REGION" \
-      #       -e TF_VAR_env="$TF_ENV" \
-      #       terraform \
-      #       sh -c '
-      #         set -e
-      #
-      #         helm repo add eks \
-      #           https://aws.github.io/eks-charts
-      #
-      #         helm repo add efs \
-      #           https://kubernetes-sigs.github.io/aws-efs-csi-driver/
-      #
-      #         helm repo add csi \
-      #           https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
-      #
-      #         helm repo add argo \
-      #           https://argoproj.github.io/argo-helm
-      #
-      #         helm repo update
-      #
-      #         terraform \
-      #           -chdir=deploy/03_EKS_terraform-manifests \
-      #           init
-      #
-      #         terraform \
-      #           -chdir=deploy/03_EKS_terraform-manifests \
-      #           workspace select -or-create "$TF_VAR_env"
-      #
-      #         terraform \
-      #           -chdir=deploy/03_EKS_terraform-manifests \
-      #           workspace show
-      #
-      #         terraform \
-      #           -chdir=deploy/03_EKS_terraform-manifests \
-      #           plan
-      #       '
+      - name: Terraform Plan EKS
+        working-directory: infra
+      
+        run: |
+      
+          set -e
+      
+          echo "=========================================="
+          echo "Terraform Plan - EKS"
+          echo "=========================================="
+      
+          echo "Workspace:"
+          echo "${TF_ENV}"
+      
+          echo "=========================================="
+      
+      
+          docker compose run --rm \
+            --entrypoint "" \
+            -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
+            -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
+            -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
+            -e AWS_REGION="$AWS_REGION" \
+            -e TF_VAR_env="$TF_ENV" \
+            terraform \
+            sh -c '
+              set -e
+      
+              helm repo add eks \
+                https://aws.github.io/eks-charts
+      
+              helm repo add efs \
+                https://kubernetes-sigs.github.io/aws-efs-csi-driver/
+      
+              helm repo add csi \
+                https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
+      
+              helm repo add argo \
+                https://argoproj.github.io/argo-helm
+      
+              helm repo update
+      
+              terraform \
+                -chdir=deploy/03_EKS_terraform-manifests \
+                init
+      
+              terraform \
+                -chdir=deploy/03_EKS_terraform-manifests \
+                workspace select -or-create "$TF_VAR_env"
+      
+              terraform \
+                -chdir=deploy/03_EKS_terraform-manifests \
+                workspace show
+      
+              terraform \
+                -chdir=deploy/03_EKS_terraform-manifests \
+                plan
+            '
 
 
       # ========================================================
