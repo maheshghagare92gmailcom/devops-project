@@ -16,3 +16,5 @@ tags = {
   Course    = "DevOps Real-world Implementation Project on AWS Cloud"
   Demo      = "VPC with Remote Backend Demo"
 }
+
+eks_cluster_name = "retail-dev-eksdemo1"
