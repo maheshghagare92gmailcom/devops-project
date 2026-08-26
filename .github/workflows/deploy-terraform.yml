@@ -315,8 +315,8 @@ jobs:
 
       - name: Debug Terraform state
         run: |
-        echo "=== State Resources ==="
-        terraform state list | sort
+          echo "=== State Resources ==="
+          terraform state list | sort
       # ========================================================
       # TERRAFORM PLAN - EKS
       
