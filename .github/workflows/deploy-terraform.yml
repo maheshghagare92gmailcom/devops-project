@@ -265,36 +265,36 @@ jobs:
           echo "=========================================="
 
 
-      # ========================================================
-      # TERRAFORM APPLY - VPC
-      #
-      # CURRENTLY DISABLED
-      #
-      # Uncomment only when you are ready to apply.
-      # ========================================================
+      ========================================================
+      TERRAFORM APPLY - VPC
+      
+      CURRENTLY DISABLED
+      
+      Uncomment only when you are ready to apply.
+      ========================================================
 
-      # - name: Terraform Apply VPC
-      #   working-directory: infra
-      #
-      #   run: |
-      #
-      #     set -e
-      #
-      #     docker compose run --rm \
-      #       --entrypoint "" \
-      #       -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
-      #       -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
-      #       -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
-      #       -e AWS_REGION="$AWS_REGION" \
-      #       -e TF_VAR_env="$TF_ENV" \
-      #       terraform \
-      #       sh -c '
-      #         set -e
-      #
-      #         terraform \
-      #           -chdir=deploy/01_VPC_terraform-manifests \
-      #           apply -auto-approve
-      #       '
+      - name: Terraform Apply VPC
+        working-directory: infra
+      
+        run: |
+      
+          set -e
+      
+          docker compose run --rm \
+            --entrypoint "" \
+            -e AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" \
+            -e AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" \
+            -e AWS_SESSION_TOKEN="$AWS_SESSION_TOKEN" \
+            -e AWS_REGION="$AWS_REGION" \
+            -e TF_VAR_env="$TF_ENV" \
+            terraform \
+            sh -c '
+              set -e
+      
+              terraform \
+                -chdir=deploy/01_VPC_terraform-manifests \
+                apply -auto-approve
+            '
 
 
       # ========================================================

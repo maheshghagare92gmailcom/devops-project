@@ -5,10 +5,12 @@ data "terraform_remote_state" "vpc" {
   backend = "s3"
 
   config = {
-    bucket               = "devops-recipe-app-tf-state-mahesh"
-    key                  = "tf-state-deploy"
+    bucket               = "devops-recipe-app-tf-state-mahesh-new"
+    key                  = "tf-state-vpc"
     region               = "us-east-1"
     workspace_key_prefix = "terraform-vpc"
+
+    
   }
 
   workspace = terraform.workspace

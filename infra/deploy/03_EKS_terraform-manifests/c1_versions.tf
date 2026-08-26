@@ -19,8 +19,8 @@ terraform {
   }
 
   backend "s3" {
-    bucket               = "devops-recipe-app-tf-state-mahesh"
-    key                  = "tf-state-eks-deploy"
+    bucket               = "devops-recipe-app-tf-state-mahesh-new"
+    key                  = "tf-state-eks"
     workspace_key_prefix = "terraform-eks"
     region               = "us-east-1"
     encrypt              = true
