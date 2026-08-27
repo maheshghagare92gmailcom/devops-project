@@ -92,3 +92,70 @@ resource "aws_eks_cluster" "main" {
 #     data.tls_certificate.eks.certificates[0].sha1_fingerprint
 #   ]
 # }
+
+# ==============================================================================
+# LOCAL AWS SSO ACCESS ENTRY
+# ==============================================================================
+#
+# This is your local AWS IAM Identity Center / SSO role.
+#
+# Your local authentication:
+#
+# AWS SSO
+#    |
+#    v
+# AWSReservedSSO_AdministratorAccess_...
+#    |
+#    v
+# EKS Access Entry
+#
+# ==============================================================================
+
+resource "aws_eks_access_entry" "local_sso_admin" {
+
+  cluster_name = aws_eks_cluster.main.name
+
+  principal_arn = "arn:aws:iam::360305064293:role/aws-reserved/sso.amazonaws.com/AWSReservedSSO_AdministratorAccess_a6eab18c96f317c9"
+
+  type = "STANDARD"
+
+  depends_on = [
+    aws_eks_cluster.main
+  ]
+}
+
+
+# ==============================================================================
+# LOCAL AWS SSO EKS ADMIN POLICY
+# ==============================================================================
+#
+# Gives your local SSO identity cluster administrator permissions.
+#
+# This allows:
+#
+# kubectl get nodes
+# kubectl get pods
+# kubectl get namespaces
+# kubectl apply
+# kubectl delete
+# etc.
+#
+# ==============================================================================
+
+resource "aws_eks_access_policy_association" "local_sso_admin" {
+
+  cluster_name = aws_eks_cluster.main.name
+
+  principal_arn = aws_eks_access_entry.local_sso_admin.principal_arn
+
+  policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+
+  access_scope {
+
+    type = "cluster"
+  }
+
+  depends_on = [
+    aws_eks_access_entry.local_sso_admin
+  ]
+}
