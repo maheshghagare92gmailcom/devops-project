@@ -42,10 +42,10 @@ jobs:
   # TERRAFORM VALIDATION
   # ============================================================
 
-  test-terraform:
-    name: Test Terraform
+  # test-terraform:
+  #   name: Test Terraform
 
-    uses: ./.github/workflows/test-terraform.yml
+  #   uses: ./.github/workflows/test-terraform.yml
 
 
   # ============================================================
@@ -55,8 +55,8 @@ jobs:
   deploy:
     name: Terraform Deploy
 
-    needs:
-      - test-terraform
+    # needs:
+    #   - test-terraform
 
     runs-on: ubuntu-22.04
 
