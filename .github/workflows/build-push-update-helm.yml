@@ -1,264 +1,264 @@
-name: Deploy Application
+# name: Deploy Application
 
-on:
-  push:
-    branches:
-      - main
-      - prod
-  # workflow_dispatch:
+# on:
+#   push:
+#     branches:
+#       - main
+#       - prod
+#   # workflow_dispatch:
   
-permissions:
-  id-token: write
-  contents: write
+# permissions:
+#   id-token: write
+#   contents: write
 
-concurrency:
-  group: application-deploy-${{ github.ref }}
-  cancel-in-progress: true
+# concurrency:
+#   group: application-deploy-${{ github.ref }}
+#   cancel-in-progress: true
 
-env:
-  AWS_REGION: us-east-1
+# env:
+#   AWS_REGION: us-east-1
 
-  ECR_REPOSITORY_APP: recipe-app-api-app-final
-  ECR_REPOSITORY_PROXY: recipe-app-api-proxy-final
+#   ECR_REPOSITORY_APP: recipe-app-api-app-final
+#   ECR_REPOSITORY_PROXY: recipe-app-api-proxy-final
 
-  HELM_PATH: django-app
+#   HELM_PATH: django-app
 
-jobs:
+# jobs:
 
-  # ============================================================
-  # APPLICATION TESTS
-  # ============================================================
-  test-application:
-    name: Test Application
+#   # ============================================================
+#   # APPLICATION TESTS
+#   # ============================================================
+#   test-application:
+#     name: Test Application
 
-    uses: ./.github/workflows/test-application.yml
+#     uses: ./.github/workflows/test-application.yml
 
 
-  # ============================================================
-  # BUILD AND PUSH DOCKER IMAGES
-  # ============================================================
-  build-and-push:
-    name: Build and Push Images
+#   # ============================================================
+#   # BUILD AND PUSH DOCKER IMAGES
+#   # ============================================================
+#   build-and-push:
+#     name: Build and Push Images
 
-    needs:
-      - test-application
+#     needs:
+#       - test-application
 
-    runs-on: ubuntu-22.04
+#     runs-on: ubuntu-22.04
 
-    steps:
+#     steps:
 
-      # ---------------------------------------------------------
-      # Checkout
-      # ---------------------------------------------------------
-      - name: Checkout Code
-        uses: actions/checkout@v4
+#       # ---------------------------------------------------------
+#       # Checkout
+#       # ---------------------------------------------------------
+#       - name: Checkout Code
+#         uses: actions/checkout@v4
 
 
-      # ---------------------------------------------------------
-      # Configure AWS using GitHub OIDC
-      # ---------------------------------------------------------
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: arn:aws:iam::360305064293:role/github-actions-oidc-role
-          aws-region: ${{ env.AWS_REGION }}
+#       # ---------------------------------------------------------
+#       # Configure AWS using GitHub OIDC
+#       # ---------------------------------------------------------
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           role-to-assume: arn:aws:iam::360305064293:role/github-actions-oidc-role
+#           aws-region: ${{ env.AWS_REGION }}
 
 
-      # ---------------------------------------------------------
-      # Verify AWS Identity
-      # ---------------------------------------------------------
-      - name: Verify AWS Identity
-        run: |
-          aws sts get-caller-identity
+#       # ---------------------------------------------------------
+#       # Verify AWS Identity
+#       # ---------------------------------------------------------
+#       - name: Verify AWS Identity
+#         run: |
+#           aws sts get-caller-identity
 
 
-      # ---------------------------------------------------------
-      # Login to Amazon ECR
-      # ---------------------------------------------------------
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+#       # ---------------------------------------------------------
+#       # Login to Amazon ECR
+#       # ---------------------------------------------------------
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v2
 
 
-      # ---------------------------------------------------------
-      # Define Image Variables
-      # ---------------------------------------------------------
-      - name: Define Image Variables
-        run: |
+#       # ---------------------------------------------------------
+#       # Define Image Variables
+#       # ---------------------------------------------------------
+#       - name: Define Image Variables
+#         run: |
 
-          SHA_TAG="sha-${GITHUB_SHA::7}"
+#           SHA_TAG="sha-${GITHUB_SHA::7}"
 
-          echo "SHA_TAG=${SHA_TAG}" >> "$GITHUB_ENV"
+#           echo "SHA_TAG=${SHA_TAG}" >> "$GITHUB_ENV"
 
-          echo "REGISTRY=${{ steps.login-ecr.outputs.registry }}" >> "$GITHUB_ENV"
+#           echo "REGISTRY=${{ steps.login-ecr.outputs.registry }}" >> "$GITHUB_ENV"
 
-          echo "APP_IMAGE_BASE=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_APP }}" >> "$GITHUB_ENV"
+#           echo "APP_IMAGE_BASE=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_APP }}" >> "$GITHUB_ENV"
 
-          echo "PROXY_IMAGE_BASE=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_PROXY }}" >> "$GITHUB_ENV"
+#           echo "PROXY_IMAGE_BASE=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY_PROXY }}" >> "$GITHUB_ENV"
 
-          echo "=========================================="
-          echo "Repository: ${GITHUB_REPOSITORY}"
-          echo "Branch: ${GITHUB_REF_NAME}"
-          echo "Commit: ${GITHUB_SHA}"
-          echo "Image tag: ${SHA_TAG}"
-          echo "=========================================="
+#           echo "=========================================="
+#           echo "Repository: ${GITHUB_REPOSITORY}"
+#           echo "Branch: ${GITHUB_REF_NAME}"
+#           echo "Commit: ${GITHUB_SHA}"
+#           echo "Image tag: ${SHA_TAG}"
+#           echo "=========================================="
 
 
-      # ---------------------------------------------------------
-      # Setup Docker Buildx
-      # ---------------------------------------------------------
-      - name: Set Up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+#       # ---------------------------------------------------------
+#       # Setup Docker Buildx
+#       # ---------------------------------------------------------
+#       - name: Set Up Docker Buildx
+#         uses: docker/setup-buildx-action@v3
 
 
-      # =========================================================
-      # BUILD DJANGO APPLICATION IMAGE
-      # =========================================================
-      - name: Build and Push Django APP Image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
+#       # =========================================================
+#       # BUILD DJANGO APPLICATION IMAGE
+#       # =========================================================
+#       - name: Build and Push Django APP Image
+#         uses: docker/build-push-action@v6
+#         with:
+#           context: .
+#           push: true
 
-          tags: |
-            ${{ env.APP_IMAGE_BASE }}:latest
-            ${{ env.APP_IMAGE_BASE }}:${{ env.SHA_TAG }}
+#           tags: |
+#             ${{ env.APP_IMAGE_BASE }}:latest
+#             ${{ env.APP_IMAGE_BASE }}:${{ env.SHA_TAG }}
 
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+#           cache-from: type=gha
+#           cache-to: type=gha,mode=max
 
 
-      # =========================================================
-      # BUILD NGINX PROXY IMAGE
-      # =========================================================
-      - name: Build and Push Proxy Image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./proxy
-          push: true
+#       # =========================================================
+#       # BUILD NGINX PROXY IMAGE
+#       # =========================================================
+#       - name: Build and Push Proxy Image
+#         uses: docker/build-push-action@v6
+#         with:
+#           context: ./proxy
+#           push: true
 
-          tags: |
-            ${{ env.PROXY_IMAGE_BASE }}:latest
-            ${{ env.PROXY_IMAGE_BASE }}:${{ env.SHA_TAG }}
+#           tags: |
+#             ${{ env.PROXY_IMAGE_BASE }}:latest
+#             ${{ env.PROXY_IMAGE_BASE }}:${{ env.SHA_TAG }}
 
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+#           cache-from: type=gha
+#           cache-to: type=gha,mode=max
 
 
-      # =========================================================
-      # CONFIGURE GIT
-      # =========================================================
-      - name: Configure Git Authentication
-        run: |
+#       # =========================================================
+#       # CONFIGURE GIT
+#       # =========================================================
+#       - name: Configure Git Authentication
+#         run: |
 
-          git config --global user.name "github-actions[bot]"
+#           git config --global user.name "github-actions[bot]"
 
-          git config --global user.email \
-            "41898282+github-actions[bot]@users.noreply.github.com"
+#           git config --global user.email \
+#             "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git remote set-url origin \
-            https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+#           git remote set-url origin \
+#             https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
 
 
-      # =========================================================
-      # INSTALL YQ
-      # =========================================================
-      - name: Install yq
-        uses: mikefarah/yq@v4
+#       # =========================================================
+#       # INSTALL YQ
+#       # =========================================================
+#       - name: Install yq
+#         uses: mikefarah/yq@v4
 
 
-      # =========================================================
-      # UPDATE HELM VALUES
-      # =========================================================
-      - name: Update Helm Image Tags
-        working-directory: ${{ env.HELM_PATH }}
-        run: |
+#       # =========================================================
+#       # UPDATE HELM VALUES
+#       # =========================================================
+#       - name: Update Helm Image Tags
+#         working-directory: ${{ env.HELM_PATH }}
+#         run: |
 
-          NEW_TAG="${SHA_TAG}"
+#           NEW_TAG="${SHA_TAG}"
 
-          echo "=========================================="
-          echo "Updating Helm image tags"
-          echo "New tag: ${NEW_TAG}"
-          echo "=========================================="
+#           echo "=========================================="
+#           echo "Updating Helm image tags"
+#           echo "New tag: ${NEW_TAG}"
+#           echo "=========================================="
 
 
-          # Django image
-          yq -i \
-            '.django.image.tag = strenv(NEW_TAG)' \
-            values.yaml
+#           # Django image
+#           yq -i \
+#             '.django.image.tag = strenv(NEW_TAG)' \
+#             values.yaml
 
 
-          # Proxy image
-          yq -i \
-            '.proxy.image.tag = strenv(NEW_TAG)' \
-            values.yaml
+#           # Proxy image
+#           yq -i \
+#             '.proxy.image.tag = strenv(NEW_TAG)' \
+#             values.yaml
 
 
-          echo ""
-          echo "Django image tag:"
-          yq '.django.image.tag' values.yaml
+#           echo ""
+#           echo "Django image tag:"
+#           yq '.django.image.tag' values.yaml
 
 
-          echo ""
-          echo "Proxy image tag:"
-          yq '.proxy.image.tag' values.yaml
+#           echo ""
+#           echo "Proxy image tag:"
+#           yq '.proxy.image.tag' values.yaml
 
 
-      # =========================================================
-      # COMMIT HELM CHANGE
-      # =========================================================
-      - name: Commit and Push Helm Changes
-        run: |
+#       # =========================================================
+#       # COMMIT HELM CHANGE
+#       # =========================================================
+#       - name: Commit and Push Helm Changes
+#         run: |
 
-          echo "=========================================="
-          echo "Checking Helm changes"
-          echo "=========================================="
+#           echo "=========================================="
+#           echo "Checking Helm changes"
+#           echo "=========================================="
 
-          git diff -- django-app/values.yaml
+#           git diff -- django-app/values.yaml
 
 
-          if git diff --quiet -- django-app/values.yaml; then
-            echo "No Helm values changes detected."
-            exit 0
-          fi
+#           if git diff --quiet -- django-app/values.yaml; then
+#             echo "No Helm values changes detected."
+#             exit 0
+#           fi
 
 
-          git add django-app/values.yaml
+#           git add django-app/values.yaml
 
 
-          git commit \
-            -m "Update Django and proxy images to ${SHA_TAG} [skip ci]"
+#           git commit \
+#             -m "Update Django and proxy images to ${SHA_TAG} [skip ci]"
 
 
-          git push origin HEAD:${GITHUB_REF_NAME}
+#           git push origin HEAD:${GITHUB_REF_NAME}
 
 
-      # =========================================================
-      # COMPLETE
-      # =========================================================
-      - name: Deployment Preparation Complete
-        run: |
+#       # =========================================================
+#       # COMPLETE
+#       # =========================================================
+#       - name: Deployment Preparation Complete
+#         run: |
 
-          echo "=========================================="
-          echo "Application CI/CD completed"
-          echo "=========================================="
+#           echo "=========================================="
+#           echo "Application CI/CD completed"
+#           echo "=========================================="
 
-          echo "Branch:"
-          echo "${GITHUB_REF_NAME}"
+#           echo "Branch:"
+#           echo "${GITHUB_REF_NAME}"
 
-          echo ""
-          echo "Django image:"
-          echo "${APP_IMAGE_BASE}:${SHA_TAG}"
+#           echo ""
+#           echo "Django image:"
+#           echo "${APP_IMAGE_BASE}:${SHA_TAG}"
 
-          echo ""
-          echo "Proxy image:"
-          echo "${PROXY_IMAGE_BASE}:${SHA_TAG}"
+#           echo ""
+#           echo "Proxy image:"
+#           echo "${PROXY_IMAGE_BASE}:${SHA_TAG}"
 
-          echo ""
-          echo "Helm values:"
-          echo "django-app/values.yaml"
+#           echo ""
+#           echo "Helm values:"
+#           echo "django-app/values.yaml"
 
-          echo ""
-          echo "Argo CD will detect the Git change."
+#           echo ""
+#           echo "Argo CD will detect the Git change."
 
-          echo "=========================================="
+#           echo "=========================================="
