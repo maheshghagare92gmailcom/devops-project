@@ -2,12 +2,12 @@ name: Deploy Terraform
 
 on:
 
-  # push:
-  #   branches:
-  #     - main
-  #     - prod
+  push:
+    branches:
+      - main
+      - prod
 
-  workflow_dispatch:
+  # workflow_dispatch:
 
 
 # ============================================================
@@ -42,10 +42,10 @@ jobs:
   # TERRAFORM VALIDATION
   # ============================================================
 
-  # test-terraform:
-  #   name: Test Terraform
+  test-terraform:
+    name: Test Terraform
 
-  #   uses: ./.github/workflows/test-terraform.yml
+    uses: ./.github/workflows/test-terraform.yml
 
 
   # ============================================================

@@ -2,7 +2,7 @@ aws:
   region: us-east-1
 
 django:
-  replicas: 1
+  replicas: 2
 
   image:
     repository: 360305064293.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-app-final
