@@ -1,12 +1,14 @@
 name: Deploy Application
 
 on:
-  push:
-    branches:
-      - main
-      - prod
-  # workflow_dispatch:
+  # push:
+    # branches:
+    #   - main
+    #   - prod
+  workflow_dispatch:
   
+
+
 permissions:
   id-token: write
   contents: write
@@ -21,7 +23,8 @@ env:
   ECR_REPOSITORY_APP: recipe-app-api-app-final
   ECR_REPOSITORY_PROXY: recipe-app-api-proxy-final
 
-  HELM_PATH: django-app
+  # Correct Helm chart path
+  HELM_PATH: helm/django-chart
 
 jobs:
 
@@ -179,25 +182,32 @@ jobs:
           echo "=========================================="
           echo "Updating Helm image tags"
           echo "New tag: ${NEW_TAG}"
+          echo "Helm path: ${HELM_PATH}"
           echo "=========================================="
 
 
+          # -----------------------------------------------------
           # Django image
+          # -----------------------------------------------------
           yq -i \
             '.django.image.tag = strenv(NEW_TAG)' \
             values.yaml
 
 
+          # -----------------------------------------------------
           # Proxy image
+          # -----------------------------------------------------
           yq -i \
             '.proxy.image.tag = strenv(NEW_TAG)' \
             values.yaml
 
 
+          # -----------------------------------------------------
+          # Verify updated values
+          # -----------------------------------------------------
           echo ""
           echo "Django image tag:"
           yq '.django.image.tag' values.yaml
-
 
           echo ""
           echo "Proxy image tag:"
@@ -205,31 +215,51 @@ jobs:
 
 
       # =========================================================
-      # COMMIT HELM CHANGE
+      # COMMIT AND PUSH HELM CHANGES
       # =========================================================
       - name: Commit and Push Helm Changes
         run: |
+
+          HELM_VALUES_FILE="${HELM_PATH}/values.yaml"
 
           echo "=========================================="
           echo "Checking Helm changes"
           echo "=========================================="
 
-          git diff -- django-app/values.yaml
+          echo "Helm values file:"
+          echo "${HELM_VALUES_FILE}"
+
+          echo ""
+
+          git diff -- "${HELM_VALUES_FILE}"
 
 
-          if git diff --quiet -- django-app/values.yaml; then
+          # -----------------------------------------------------
+          # Check whether values.yaml actually changed
+          # -----------------------------------------------------
+          if git diff --quiet -- "${HELM_VALUES_FILE}"; then
             echo "No Helm values changes detected."
             exit 0
           fi
 
 
-          git add django-app/values.yaml
+          # -----------------------------------------------------
+          # Stage Helm values
+          # -----------------------------------------------------
+          git add "${HELM_VALUES_FILE}"
 
 
+          # -----------------------------------------------------
+          # Commit changes
+          # [skip ci] prevents another workflow execution
+          # -----------------------------------------------------
           git commit \
             -m "Update Django and proxy images to ${SHA_TAG} [skip ci]"
 
 
+          # -----------------------------------------------------
+          # Push back to the same branch
+          # -----------------------------------------------------
           git push origin HEAD:${GITHUB_REF_NAME}
 
 
@@ -247,6 +277,10 @@ jobs:
           echo "${GITHUB_REF_NAME}"
 
           echo ""
+          echo "Commit:"
+          echo "${GITHUB_SHA}"
+
+          echo ""
           echo "Django image:"
           echo "${APP_IMAGE_BASE}:${SHA_TAG}"
 
@@ -256,9 +290,10 @@ jobs:
 
           echo ""
           echo "Helm values:"
-          echo "django-app/values.yaml"
+          echo "${HELM_PATH}/values.yaml"
 
           echo ""
           echo "Argo CD will detect the Git change."
 
           echo "=========================================="
+
