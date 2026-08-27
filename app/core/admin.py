@@ -53,6 +53,6 @@ admin.site.register(models.Ingredient)
 # Deployment Test Customization 🚀
 # ================================
 
-admin.site.site_header = "🚀 Mahesh Deployment v2"
+admin.site.site_header = "🚀 Mahesh Devops project"
 admin.site.site_title = "Mahesh Admin Portal"
 admin.site.index_title = "Welcome to NEW Deployment"
