@@ -74,7 +74,7 @@ ingress:
 
   listenPorts: '[{"HTTP":80},{"HTTPS":443}]'
 
-  certificateArn: arn:aws:acm:us-east-1:360305064293:certificate/07c79991-29a5-4b0e-8c05-8c708aaac5bf
+  certificateArn: arn:aws:acm:us-east-1:360305064293:certificate/f35607f6-0f13-4f1c-b115-bb7625f449b7 
 
   sslRedirect: "443"
 
