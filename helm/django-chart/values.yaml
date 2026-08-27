@@ -52,7 +52,7 @@ ingress:
   listenPorts: '[{"HTTP":80},{"HTTPS":443}]'
   certificateArn: arn:aws:acm:us-east-1:360305064293:certificate/f35607f6-0f13-4f1c-b115-bb7625f449b7
   sslRedirect: "443"
-  securityGroupId: "sg-0f8e029dcc914e533"
+  securityGroupId: "sg-0a9080cc448344785"
   hostname: app.maheshdevops.shop
   backend:
     serviceName: proxy
