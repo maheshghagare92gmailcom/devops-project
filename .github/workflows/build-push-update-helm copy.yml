@@ -2,12 +2,13 @@
 name: Deploy Application
 
 on:
+  workflow_dispatch:
   # push:
   #   branches:
   #     - main
   #     - prod
 
-  workflow_dispatch:
+  # workflow_dispatch:
 
 permissions:
   id-token: write
