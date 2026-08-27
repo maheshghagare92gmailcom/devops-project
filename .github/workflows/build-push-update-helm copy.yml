@@ -2,10 +2,11 @@
 name: Deploy Application
 
 on:
-  # push:
-  #   branches:
-  #     - main
-  #     - prod
+  push:
+    branches:
+      - main
+      - prod
+
   workflow_dispatch:
 
 permissions:
@@ -22,7 +23,6 @@ env:
   ECR_REPOSITORY_APP: recipe-app-api-app-final
   ECR_REPOSITORY_PROXY: recipe-app-api-proxy-final
 
-  # Correct Helm chart path
   HELM_PATH: helm/django-chart
 
 jobs:
@@ -32,7 +32,6 @@ jobs:
   # ============================================================
   test-application:
     name: Test Application
-
     uses: ./.github/workflows/test-application.yml
 
 
@@ -250,14 +249,13 @@ jobs:
 
           # -----------------------------------------------------
           # Commit changes
-          # [skip ci] prevents another workflow execution
           # -----------------------------------------------------
           git commit \
             -m "Update Django and proxy images to ${SHA_TAG} [skip ci]"
 
 
           # -----------------------------------------------------
-          # Push back to the same branch
+          # Push back to same branch
           # -----------------------------------------------------
           git push origin HEAD:${GITHUB_REF_NAME}
 
@@ -295,4 +293,3 @@ jobs:
           echo "Argo CD will detect the Git change."
 
           echo "=========================================="
-```
