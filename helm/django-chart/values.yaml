@@ -74,11 +74,11 @@ ingress:
 
   listenPorts: '[{"HTTP":80},{"HTTPS":443}]'
 
-  certificateArn: arn:aws:acm:us-east-1:360305064293:certificate/bb6095c3-b02f-4154-bb3c-ce086d1e06a2
+  certificateArn: arn:aws:acm:us-east-1:360305064293:certificate/07c79991-29a5-4b0e-8c05-8c708aaac5bf
 
   sslRedirect: "443"
 
-  securityGroupId: "sg-0f8e029dcc914e533"
+  securityGroupId: "sg-053ac47d99d48e686"
 
   hostname: app.maheshdevops.shop
 
