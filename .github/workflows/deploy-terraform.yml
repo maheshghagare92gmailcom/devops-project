@@ -2,12 +2,12 @@ name: Deploy Terraform
 
 on:
 
-  push:
-    branches:
-      - main
-      - prod
+  # push:
+  #   branches:
+  #     - main
+  #     - prod
 
-  # workflow_dispatch:
+  workflow_dispatch:
 
 
 # ============================================================

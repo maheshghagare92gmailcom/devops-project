@@ -1,7 +1,7 @@
-name: Deploy Application
+name: build-push-update-helm
 
 on:
-  # push:
+    # push:
     # branches:
     #   - main
     #   - prod
