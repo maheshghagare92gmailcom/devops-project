@@ -6,8 +6,6 @@ on:
       - main
       - prod
   # workflow_dispatch:
-  
-
 
 permissions:
   id-token: write
@@ -23,7 +21,6 @@ env:
   ECR_REPOSITORY_APP: recipe-app-api-app-final
   ECR_REPOSITORY_PROXY: recipe-app-api-proxy-final
 
-  # Correct Helm chart path
   HELM_PATH: helm/django-chart
 
 jobs:
@@ -177,30 +174,34 @@ jobs:
         working-directory: ${{ env.HELM_PATH }}
         run: |
 
-          NEW_TAG="${SHA_TAG}"
-
           echo "=========================================="
           echo "Updating Helm image tags"
-          echo "New tag: ${NEW_TAG}"
+          echo "New tag: ${SHA_TAG}"
           echo "Helm path: ${HELM_PATH}"
           echo "=========================================="
 
+          # -----------------------------------------------------
+          # Safety check
+          # -----------------------------------------------------
+          if [ -z "${SHA_TAG}" ]; then
+            echo "ERROR: SHA_TAG is empty!"
+            echo "Refusing to update values.yaml."
+            exit 1
+          fi
 
           # -----------------------------------------------------
           # Django image
           # -----------------------------------------------------
           yq -i \
-            '.django.image.tag = strenv(NEW_TAG)' \
+            '.django.image.tag = strenv(SHA_TAG)' \
             values.yaml
-
 
           # -----------------------------------------------------
           # Proxy image
           # -----------------------------------------------------
           yq -i \
-            '.proxy.image.tag = strenv(NEW_TAG)' \
+            '.proxy.image.tag = strenv(SHA_TAG)' \
             values.yaml
-
 
           # -----------------------------------------------------
           # Verify updated values
@@ -212,6 +213,74 @@ jobs:
           echo ""
           echo "Proxy image tag:"
           yq '.proxy.image.tag' values.yaml
+
+
+      # =========================================================
+      # VERIFY HELM IMAGE TAGS
+      # =========================================================
+      - name: Verify Helm Image Tags
+        working-directory: ${{ env.HELM_PATH }}
+        run: |
+
+          DJANGO_TAG=$(yq -r '.django.image.tag' values.yaml)
+          PROXY_TAG=$(yq -r '.proxy.image.tag' values.yaml)
+
+          echo "=========================================="
+          echo "Verifying Helm image tags"
+          echo "=========================================="
+
+          echo "Django tag: ${DJANGO_TAG}"
+          echo "Proxy tag: ${PROXY_TAG}"
+
+          # -----------------------------------------------------
+          # Validate Django tag
+          # -----------------------------------------------------
+          if [ -z "${DJANGO_TAG}" ] || [ "${DJANGO_TAG}" = "null" ]; then
+            echo "ERROR: Django image tag is empty!"
+            exit 1
+          fi
+
+          # -----------------------------------------------------
+          # Validate Proxy tag
+          # -----------------------------------------------------
+          if [ -z "${PROXY_TAG}" ] || [ "${PROXY_TAG}" = "null" ]; then
+            echo "ERROR: Proxy image tag is empty!"
+            exit 1
+          fi
+
+          # -----------------------------------------------------
+          # Make sure both tags match SHA_TAG
+          # -----------------------------------------------------
+          if [ "${DJANGO_TAG}" != "${SHA_TAG}" ]; then
+            echo "ERROR: Django image tag does not match SHA_TAG!"
+            exit 1
+          fi
+
+          if [ "${PROXY_TAG}" != "${SHA_TAG}" ]; then
+            echo "ERROR: Proxy image tag does not match SHA_TAG!"
+            exit 1
+          fi
+
+          echo ""
+          echo "Helm image tags are valid."
+
+
+      # =========================================================
+      # VERIFY HELM RENDERING
+      # =========================================================
+      - name: Verify Helm Rendering
+        run: |
+
+          echo "=========================================="
+          echo "Verifying Helm rendering"
+          echo "=========================================="
+
+          helm template django-app "${HELM_PATH}" \
+            --values "${HELM_PATH}/values.yaml" \
+            | grep "image:"
+
+          echo ""
+          echo "Helm rendering completed successfully."
 
 
       # =========================================================
@@ -233,7 +302,6 @@ jobs:
 
           git diff -- "${HELM_VALUES_FILE}"
 
-
           # -----------------------------------------------------
           # Check whether values.yaml actually changed
           # -----------------------------------------------------
@@ -242,12 +310,10 @@ jobs:
             exit 0
           fi
 
-
           # -----------------------------------------------------
           # Stage Helm values
           # -----------------------------------------------------
           git add "${HELM_VALUES_FILE}"
-
 
           # -----------------------------------------------------
           # Commit changes
@@ -255,7 +321,6 @@ jobs:
           # -----------------------------------------------------
           git commit \
             -m "Update Django and proxy images to ${SHA_TAG} [skip ci]"
-
 
           # -----------------------------------------------------
           # Push back to the same branch
@@ -296,4 +361,3 @@ jobs:
           echo "Argo CD will detect the Git change."
 
           echo "=========================================="
-
