@@ -78,7 +78,7 @@ ingress:
 
   sslRedirect: "443"
 
-  securityGroupId: "sg-053ac47d99d48e686"
+  securityGroupId: "sg-0f8e029dcc914e533"
 
   hostname: app.maheshdevops.shop
 
