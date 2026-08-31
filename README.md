@@ -137,3 +137,182 @@ Argo CD Sync
     ↓
 Amazon EKS
 ```
+
+🛠️ Technology Stack
+Category	Technology
+Application	Django / Django REST Framework
+Programming Language	Python
+Containerization	Docker
+Local Development	Docker Compose
+Cloud	AWS
+Kubernetes	Amazon EKS
+Container Registry	Amazon ECR
+Infrastructure as Code	Terraform
+Kubernetes Packaging	Helm
+CI/CD	GitHub Actions
+GitOps	Argo CD
+Database	Amazon RDS PostgreSQL
+Persistent Storage	Amazon EFS
+Load Balancing	AWS Application Load Balancer
+DNS	Amazon Route 53
+TLS	AWS Certificate Manager
+AWS Authentication	GitHub Actions OIDC
+Secrets Integration	Secrets Store CSI Driver
+State Management	Amazon S3 + DynamoDB
+
+
+☁️ AWS Infrastructure
+
+Terraform is used to provision and manage the AWS infrastructure.
+
+AWS Components
+Amazon VPC
+
+Provides network isolation for the application environment.
+
+The VPC contains public and private networking components required by the EKS environment.
+
+Amazon EKS
+
+Amazon EKS provides the managed Kubernetes control plane used to run the Django application.
+
+The workload runs on Kubernetes worker nodes in the configured AWS environment.
+
+Amazon ECR
+
+Amazon ECR stores the Docker images used by the Kubernetes workloads.
+
+Two application images are maintained:
+
+Django Application Image
+        │
+        ▼
+Amazon ECR
+
+Nginx Proxy Image
+        │
+        ▼
+Amazon ECR
+Amazon RDS PostgreSQL
+
+RDS provides the PostgreSQL database used by the Django application.
+
+Amazon EFS
+
+Amazon EFS provides persistent/shared storage for application data such as static and media content.
+
+AWS Application Load Balancer
+
+The AWS Load Balancer Controller integrates Kubernetes Ingress with an AWS Application Load Balancer.
+
+External HTTP/HTTPS traffic is routed toward the Kubernetes application.
+
+Route 53
+
+Route 53 provides DNS management for the application domain.
+
+AWS Certificate Manager
+
+ACM provides the TLS certificate used for HTTPS traffic.
+
+IAM
+
+IAM roles and policies control access between AWS services, Kubernetes workloads, and GitHub Actions.
+
+S3 and DynamoDB
+
+Terraform remote state uses:
+
+Amazon S3 for Terraform state storage.
+DynamoDB for Terraform state locking
+
+
+🐳 Docker
+
+The application is containerized using Docker.
+
+☸️ Kubernetes
+
+The application runs on Amazon EKS using Kubernetes resources.
+
+⎈ Helm
+
+The Kubernetes application is packaged using Helm.
+
+Chart location:
+
+helm/django-chart/
+
+The Helm chart separates application configuration from Kubernetes templates.
+
+Important configuration is maintained in:
+
+helm/django-chart/values.yaml
+
+🏗️ Terraform Infrastructure Architecture
+
+The project follows an Infrastructure as Code (IaC) approach using Terraform to provision and manage AWS infrastructure.
+
+The Terraform configuration is organized into two main areas:
+
+infra/
+├── setup/
+│   ├── ecr.tf
+│   ├── iam.tf
+│   ├── github_aws_iam_openid_connect_provider.tf
+│   └── ...
+│
+└── deploy/
+    ├── 01_VPC_terraform-manifests/
+    ├── 02_VPC_module_terraform-manifests/
+    └── 03_EKS_terraform-manifests/
+Terraform Setup
+
+The infra/setup configuration contains the foundational resources required before application infrastructure deployment.
+
+It manages resources such as:
+
+Amazon ECR repositories
+IAM roles and permissions
+GitHub Actions OIDC integration
+CI/CD related AWS configuration
+Terraform Deployment
+
+The infra/deploy directory contains the infrastructure required to run the application in AWS.
+
+The deployment configuration is organized into separate Terraform projects for:
+
+VPC and networking
+EKS cluster and worker nodes
+IAM roles and access
+Amazon RDS PostgreSQL
+Amazon EFS
+AWS Load Balancer Controller
+Secrets Store CSI integration
+Argo CD
+ACM and supporting resources
+Security groups and networking rules
+
+Dockerized Terraform
+
+Terraform is executed through Docker Compose to maintain a consistent Terraform execution environment.
+
+This provides:
+
+Consistent Terraform versions
+Reproducible execution environments
+Similar Terraform environments locally and in CI/CD
+Reduced dependency on local Terraform installation
+Environment Management
+
+Terraform workspaces are used to separate environment state.
+
+Terraform
+    │
+    ├── staging
+    │     └── AWS infrastructure
+    │
+    └── prod
+          └── AWS infrastructure
+
+This structure allows the same Terraform configuration to be used for multiple environments while maintaining separate Terraform state.
