@@ -1,6 +1,5 @@
 aws:
   region: us-east-1
-
 django:
   replicas: 1
   image:
@@ -21,7 +20,6 @@ django:
     staticClaim: efs-pvc-static
     mediaClaim: efs-pvc
     secretProviderClass: django-db-secrets
-
 proxy:
   replicas: 1
   image:
@@ -37,7 +35,6 @@ proxy:
   volumes:
     staticClaim: efs-pvc-static
     mediaClaim: efs-pvc
-
 efs:
   accessMode: ReadWriteMany
   storageClassName: efs-sc
@@ -46,7 +43,6 @@ efs:
     claimName: efs-pvc
   static:
     claimName: efs-pvc-static
-
 ingress:
   name: django-ingress
   className: alb
