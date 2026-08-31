@@ -23,3 +23,31 @@ Implement GitOps deployment using Argo CD.
 Use Amazon RDS PostgreSQL as the application database.
 Use Amazon EFS for persistent application storage.
 Expose the application through an AWS Application Load Balancer.
+
+
+🏗️ Architecture
+High-Level Architecture
+                              Internet
+                                  │
+                                  ▼
+                              Route 53
+                                  │
+                                  ▼
+                       AWS Application Load Balancer
+                                  │
+                                  ▼
+                       Kubernetes Ingress
+                                  │
+                                  ▼
+                           Nginx Proxy
+                                  │
+                                  ▼
+                           Django Service
+                                  │
+                     ┌────────────┴────────────┐
+                     │                         │
+                     ▼                         ▼
+              PostgreSQL RDS                 EFS
+              Application DB          Persistent Storage
+
+              
