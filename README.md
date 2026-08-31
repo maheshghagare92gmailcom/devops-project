@@ -64,6 +64,8 @@ The CI/CD pipeline is implemented using GitHub Actions with AWS OIDC authenticat
 
 The project uses **GitHub Actions** for CI/CD and **Argo CD** for GitOps-based deployment to Amazon EKS.
 
+![GitHub Actions CI/CD and GitOps Architecture](docs/images/github-actions-cicd-gitops-architecture.png)
+
 ### Workflow Overview
 
 ```text
