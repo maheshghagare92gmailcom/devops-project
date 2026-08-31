@@ -4,7 +4,7 @@ django:
   replicas: 2
   image:
     repository: 360305064293.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-app-final
-    tag: "sha-b27dab3"
+    tag: "sha-6f4da39"
   containerPort: 9000
   serviceAccountName: django
   secret:
@@ -24,7 +24,7 @@ proxy:
   replicas: 1
   image:
     repository: 360305064293.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-proxy-final
-    tag: "sha-b27dab3"
+    tag: "sha-6f4da39"
   containerPort: 8000
   appHost: django
   appPort: "9000"
