@@ -1,87 +1,59 @@
 aws:
   region: us-east-1
-
 django:
-  replicas: 2
-
+  replicas: 1
   image:
     repository: 360305064293.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-app-final
-    tag: new
-
+    tag: "new"
   containerPort: 9000
-
   serviceAccountName: django
-
   secret:
     name: app-secret
-
   service:
     type: ClusterIP
     port: 9000
     targetPort: 9000
-
   secretProvider:
     name: django-db-secrets
     objectName: django-db-secret
-
   volumes:
     staticClaim: efs-pvc-static
     mediaClaim: efs-pvc
     secretProviderClass: django-db-secrets
-
 proxy:
   replicas: 1
-
   image:
     repository: 360305064293.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-proxy-final
-    tag: new
-
+    tag: "new"
   containerPort: 8000
-
   appHost: django
   appPort: "9000"
-
   service:
     type: ClusterIP
     port: 80
     targetPort: 8000
-
   volumes:
     staticClaim: efs-pvc-static
     mediaClaim: efs-pvc
-
 efs:
   accessMode: ReadWriteMany
   storageClassName: efs-sc
   storage: 5Gi
-
   media:
     claimName: efs-pvc
-
   static:
     claimName: efs-pvc-static
-
 ingress:
   name: django-ingress
-
   className: alb
-
   scheme: internet-facing
-
   targetType: ip
-
   healthcheckPath: /api/health-check/
-
   listenPorts: '[{"HTTP":80},{"HTTPS":443}]'
-
-  certificateArn: arn:aws:acm:us-east-1:360305064293:certificate/f35607f6-0f13-4f1c-b115-bb7625f449b7 
-
+  certificateArn: arn:aws:acm:us-east-1:360305064293:certificate/0f723767-0e9f-41fb-9cad-ccd490c288d1
   sslRedirect: "443"
-
-  securityGroupId: "sg-0f8e029dcc914e533"
-
+  securityGroupId: "sg-0d8ff3ff70df9755d"
   hostname: app.maheshdevops.shop
-
   backend:
     serviceName: proxy
     servicePort: 80
