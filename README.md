@@ -51,3 +51,89 @@ High-Level Architecture
               Application DB          Persistent Storage
 
               
+## 🔄 CI/CD and GitOps Architecture
+
+The project uses **GitHub Actions** for CI/CD and **Argo CD** for GitOps-based deployment to Amazon EKS.
+
+### Workflow Overview
+
+```text
+Feature Branch
+      │
+      ▼
+Pull Request
+      │
+      ▼
+GitHub Actions Checks
+      │
+      ├── Django Unit Tests
+      ├── Python Linting
+      └── Terraform Validation
+      │
+      ▼
+Merge to main / prod
+      │
+      ▼
+Build & Push Docker Images
+      │
+      ▼
+Amazon ECR
+      │
+      ▼
+Update Helm Image Tags
+      │
+      ▼
+Argo CD
+      │
+      ▼
+Amazon EKS
+```
+
+### GitHub Actions Workflows
+
+The CI/CD pipeline is organized into separate reusable workflows:
+
+| Workflow                     | Purpose                                                               |
+| ---------------------------- | --------------------------------------------------------------------- |
+| `checks.yml`                 | Runs application and Terraform validation                             |
+| `test-application.yml`       | Django tests and Python linting                                       |
+| `test-terraform.yml`         | Terraform format and validation                                       |
+| `deploy-terraform.yml`       | Provisions and updates AWS infrastructure using Terraform             |
+| `build-push-update-helm.yml` | Builds Docker images, pushes them to ECR, and updates Helm image tags |
+| `destroy.yml`                | Manually destroys Terraform-managed AWS infrastructure when required  |
+
+### Branch Strategy
+
+* **Feature branches** → Development and testing
+* **`main`** → Staging/testing deployment path
+* **`prod`** → Production deployment path
+
+### GitOps with Argo CD
+
+After the application image is built and pushed to **Amazon ECR**, the Helm configuration is updated with the new image tag.
+
+**Argo CD monitors the Git repository and synchronizes the desired Kubernetes state with Amazon EKS.**
+
+This provides a GitOps workflow where the Git repository acts as the source of truth for the Kubernetes application configuration.
+
+### Deployment Flow
+
+```text
+Code Change
+    ↓
+Pull Request
+    ↓
+Automated Checks
+    ↓
+Merge
+    ↓
+Docker Build
+    ↓
+Amazon ECR
+    ↓
+Helm Values Update
+    ↓
+Argo CD Sync
+    ↓
+Amazon EKS
+```
