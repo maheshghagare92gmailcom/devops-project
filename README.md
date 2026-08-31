@@ -316,3 +316,235 @@ Terraform
           └── AWS infrastructure
 
 This structure allows the same Terraform configuration to be used for multiple environments while maintaining separate Terraform state.
+
+
+🔄 CI/CD with GitHub Actions
+
+GitHub Actions automates application testing, Terraform validation, Docker image creation, image publishing, and Helm configuration updates.
+
+🔐 GitHub Actions → AWS OIDC
+
+The CI/CD pipeline uses GitHub Actions OIDC to authenticate with AWS.
+
+📦 Amazon ECR
+
+The CI/CD workflow authenticates with Amazon ECR and publishes the application images.
+
+🚀 Argo CD / GitOps
+
+Argo CD is used to implement GitOps-based Kubernetes deployment.
+
+The Argo CD application definition is located at:
+
+argocd/django-app.yaml
+
+🔒 Security
+
+Security considerations implemented in the project include:
+
+GitHub → AWS OIDC
+
+Avoids long-lived AWS credentials in GitHub Actions.
+
+IAM
+
+AWS permissions are provided through IAM roles and policies.
+
+Kubernetes Service Accounts
+
+Workloads use Kubernetes service accounts for controlled access to AWS resources.
+
+Secrets Store CSI Driver
+
+Kubernetes workloads can retrieve required secrets through the Secrets Store CSI integration rather than hardcoding credentials in application manifests.
+
+Security Groups
+
+AWS security groups control traffic between:
+
+Internet
+   │
+   ▼
+ALB
+   │
+   ▼
+EKS
+   │
+   ▼
+Application
+🧪 Testing and Validation
+
+The project includes automated application and Terraform validation.
+
+Application
+Django Tests
+     +
+Flake8
+Terraform
+Terraform Init
+     +
+Terraform Format Check
+     +
+Terraform Validate
+Kubernetes
+
+Application health can be validated using Kubernetes and AWS load balancer health checks.
+
+Example troubleshooting commands:
+
+kubectl get nodes
+kubectl get pods
+kubectl get svc
+kubectl get ingress
+
+AWS target health can be investigated using the AWS CLI.
+
+🛠️ Challenges and Troubleshooting
+
+One of the major goals of this project was learning how to troubleshoot real DevOps deployment issues rather than only performing a successful deployment.
+
+1. AWS ALB Target Health
+Problem
+
+The ALB target group reported unhealthy targets.
+
+Investigation
+
+The issue was investigated across multiple layers:
+
+ALB
+ │
+ ▼
+Target Group
+ │
+ ▼
+Kubernetes Ingress
+ │
+ ▼
+Service
+ │
+ ▼
+Pod
+ │
+ ▼
+Application Health Endpoint
+
+The application health endpoint was tested directly and returned a successful HTTP response.
+
+The investigation identified an AWS security group communication issue between the ALB and EKS workload networking.
+
+Resolution
+
+The required security group rule was configured to allow traffic from the ALB security group toward the application workload.
+
+Lesson
+
+Kubernetes application failures are not always caused by Kubernetes configuration. AWS networking, security groups, target groups, and health checks must also be considered.
+
+2. GitHub Actions AWS Authentication
+Problem
+
+GitHub Actions required secure authentication to AWS.
+
+Solution
+
+GitHub Actions OIDC was configured with an AWS IAM trust relationship.
+
+GitHub
+   │
+   ▼
+OIDC Token
+   │
+   ▼
+AWS IAM
+   │
+   ▼
+Assumed Role
+Lesson
+
+OIDC provides a more secure CI/CD authentication model than storing long-lived AWS access keys.
+
+3. Terraform State Management
+Problem
+
+Terraform behavior differed between local execution and CI/CD execution.
+
+Investigation
+
+Terraform state, workspace selection, backend configuration, and execution environments were compared.
+
+Lesson
+
+Terraform state is a critical part of Infrastructure as Code. The same configuration can produce different results when different state files, workspaces, or backends are being used.
+
+📚 What I Learned
+
+This project provided hands-on experience across the complete DevOps lifecycle.
+
+AWS
+VPC networking
+Amazon EKS
+Amazon ECR
+IAM
+Application Load Balancer
+RDS PostgreSQL
+EFS
+Route 53
+ACM
+Docker
+Dockerfile development
+Containerized Django application
+Nginx reverse proxy container
+Docker Compose
+Docker image versioning
+Kubernetes
+Deployments
+Services
+Ingress
+ServiceAccounts
+PersistentVolumeClaims
+StorageClass
+Health checks
+Kubernetes troubleshooting
+Terraform
+Infrastructure as Code
+Terraform modules
+Remote state
+State locking
+Workspaces
+Terraform validation
+AWS resource provisioning
+GitHub Actions
+CI/CD workflows
+Reusable workflows
+Application testing
+Terraform validation
+Docker builds
+ECR publishing
+GitHub OIDC
+Helm
+Helm charts
+Values files
+Kubernetes templates
+Application configuration
+Image version management
+GitOps
+Argo CD
+Declarative deployment
+Git as the source of truth
+Kubernetes synchronization
+🔮 Future Improvements
+
+Potential improvements include:
+
+Add centralized monitoring with Prometheus and Grafana.
+Add centralized logging.
+Add application performance monitoring.
+Add automated security scanning for Docker images.
+Add Terraform security scanning.
+Add Kubernetes manifest security scanning.
+Add automated dependency vulnerability scanning.
+Implement more complete environment promotion workflows.
+Improve deployment rollback automation.
+Add automated smoke tests after deployment.
+Add disaster recovery documentation.
