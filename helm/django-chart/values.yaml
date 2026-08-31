@@ -1,10 +1,10 @@
 aws:
   region: us-east-1
 django:
-  replicas: 2
+  replicas: 1
   image:
     repository: 360305064293.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-app-final
-    tag: "sha-6f4da39"
+    tag: "new"
   containerPort: 9000
   serviceAccountName: django
   secret:
@@ -24,7 +24,7 @@ proxy:
   replicas: 1
   image:
     repository: 360305064293.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-proxy-final
-    tag: "sha-6f4da39"
+    tag: "new"
   containerPort: 8000
   appHost: django
   appPort: "9000"
@@ -50,9 +50,9 @@ ingress:
   targetType: ip
   healthcheckPath: /api/health-check/
   listenPorts: '[{"HTTP":80},{"HTTPS":443}]'
-  certificateArn: arn:aws:acm:us-east-1:360305064293:certificate/987ef1dd-b056-4fe5-b1be-2db51fd20384
+  certificateArn: arn:aws:acm:us-east-1:360305064293:certificate/0f723767-0e9f-41fb-9cad-ccd490c288d1
   sslRedirect: "443"
-  securityGroupId: "sg-0a9080cc448344785"
+  securityGroupId: "sg-0d8ff3ff70df9755d"
   hostname: app.maheshdevops.shop
   backend:
     serviceName: proxy
