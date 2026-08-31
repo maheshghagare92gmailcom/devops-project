@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proxy
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: proxy
+
+  template:
+    metadata:
+      labels:
+        app: proxy
+
+    spec:
+      containers:
+        - name: nginx
+
+          image: 360305064293.dkr.ecr.us-east-1.amazonaws.com/recipe-app-api-proxy-final:new
+
+          ports:
+            - containerPort: 8000
+
+          env:
+            - name: APP_HOST
+              value: "django"
+
+            - name: APP_PORT
+              value: "9000"
+
+          volumeMounts:
+            - name: static
+              mountPath: /vol/static
+              readOnly: true
+
+            - name: media
+              mountPath: /vol/media
+              readOnly: true
+
+      volumes:
+        - name: static
+          persistentVolumeClaim:
+            claimName: efs-pvc-static
+
+        - name: media
+          persistentVolumeClaim:
+            claimName: efs-pvc
