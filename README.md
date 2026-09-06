@@ -33,6 +33,8 @@ The CI/CD pipeline is implemented using GitHub Actions with AWS OIDC authenticat
 
 ## High-Level Architecture
 
+![AWS Infrastructure Architecture](docs/images/infra-architecture.png)
+
 ```text
                               Internet
                                   │
